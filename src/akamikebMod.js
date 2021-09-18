@@ -43,42 +43,42 @@ loadHelper=function(vars, index){
 }
 
 //everything goes in here.
-AkamikebMod = {
+AkaMod = {
 	streamData: {
-		twitchViewers: Math.round(Math.random() * 100),
-		akamikebStreaming: false,
-		caughtStreams: 0
+		url: "http://mikebstreamcheck-env.eba-brk2myvg.us-west-2.elasticbeanstalk.com/",
+		viewerCount: 0,
+		mikeStreaming: false,
+		gameName: "",
+		title: "",
+		caughtStreams: 0,
+		lastStream: undefined
 	},
 
 	upgrades: [],
-	achivements: [],
+	achievements: [],
 
 	//set up the hooks.
 	init:function(){
 		//Boost CPS
 		Game.registerHook('cps', (oldCps) => {
-			if(AkamikebMod.streamData.akamikebStreaming) {
-				return oldCps * (1 + AkamikebMod.computeStreamingBuff() * AkamikebMod.streamData.twitchViewers / 100);
+			if(AkaMod.streamData.mikeStreaming) {
+				return oldCps * (1 + AkaMod.computeStreamingBuff() * AkaMod.streamData.viewerCount / 100);
 			}
 			return oldCps;
 		});
 
 		//Boost clicks.
 		Game.registerHook("cookiesPerClick", (oldClicks) => {
-			if(AkamikebMod.streamData.akamikebStreaming) {
-				return oldClicks * AkamikebMod.computeStreamingBuff();
+			if(AkaMod.streamData.mikeStreaming) {
+				return oldClicks * AkaMod.computeStreamingBuff();
 			}
 			return oldClicks;
 		});
 
 		//initial resource loading.
 		Game.registerHook("create", () => {
-			//Game.Upgrade=function(name,desc,price,icon,buyFunction)
-			Game.order = 1000;
-			this.upgrades.push(new Game.Upgrade("I'm a fan","Double bonus from watching live streams!<q>How's this twitch thing work?</q>",cnum(700,'t'),[19,3]));
-
-			//Game.Achievement=function(name,desc,icon)
-			new Game.Achievement("Streamerman", "Catch a live stream!", [16,5]);
+			AkaMod.registerUpgrades();
+			AkaMod.registerAchivements();
 		})
 
 		//slowtick
@@ -86,7 +86,16 @@ AkamikebMod = {
 			
 		});
 
-		setTimeout(AkamikebMod.streamingPoll, 1000 * 60 * 5);
+		AkaMod.bakeryNameSet=Game.bakeryNameSet;
+		Game.bakeryNameSet=function(what){
+			if(what.toLowerCase() == 'akamikeb'){
+				Game.Win("No, you're a fony");
+			}
+			BenMod.bakeryNameSet(what);
+		}
+
+		setTimeout(AkaMod.streamingPoll, 100);
+		Game.Popup("AkamikebB mod loaded!");
 	},
 
 	//Figures out the CPS and click boost from mike streaming.
@@ -98,53 +107,84 @@ AkamikebMod = {
 		return factor;
 	},
 
+	registerUpgrades: () => {
+		if(AkaMod.upgrades.length !== 0) {
+			return; //don't load twice
+		}
+		//Game.Upgrade=function(name,desc,price,icon,buyFunction)
+		Game.order = 1000;
+		AkaMod.upgrades.push(new Game.Upgrade("I'm A Fan","Double bonus from watching live streams!<q>How's this twitch thing work?</q>",cnum(700,'t'),[19,3]));
+		AkaMod.upgrades.push(new Game.Upgrade("I'm A Big Fan","Quadruple bonus from watching live streams!<q>So I press this button to stream...</q>",cnum(700,'t'),[19,3]));
+		AkaMod.upgrades.push(new Game.Upgrade("I'm A Super Fan","Octuple bonus from watching live streams!<q>And I can chat right here...</q>",cnum(700,'t'),[19,3]));
+		AkaMod.upgrades.push(new Game.Upgrade("I'm A MEGA Fan","Sexdecuple bonus from watching live streams!<q>And the streamer video goes here...</q>",cnum(700,'t'),[19,3]));
+		AkaMod.upgrades.push(new Game.Upgrade("I'm A RIDICULOUS Fan","Duotredicuple(???) bonus from watching live streams!<q>Oh, that's how it works.</q>",cnum(700,'t'),[19,3]));
+	},
+
+	registerAchivements: () => {
+		if(AkaMod.achievements.length !== 0) {
+			return; //don't load twice
+		}
+		//Game.Achievement=function(name,desc,icon)
+		//streamer achievements
+		AkaMod.achievements.push(new Game.Achievement("Streamerman", "Catch a live stream!", [16,5]));
+		AkaMod.achievements.push(new Game.Achievement("It's a classic!", "Mike is playing Trials or Oxygen Not Included", [8,0]));
+		AkaMod.achievements.push(new Game.Achievement("No, you're a fony", "Rename your bakery to akamikeb", [28,7]));
+	},
+
 	save:function(){
 		//use this to store persistent data associated with your mod
 		let str = "";
 		//save ugprades
-		for (var i in AkamikebMod.upgrades) { //upgrades
-			var me=AkamikebMod.upgrades[i];
+		for (var i in AkaMod.upgrades) { //upgrades
+			var me=AkaMod.upgrades[i];
 			str += me.unlocked + ',' + me.bought + ';';
 		}
 		str = str.substr(0, str.length-1);
 
 		//save achievements
 		str+='|';
-		for (var i in AkamikebMod.achievements) {
-			var me=AkamikebMod.achievements[i];
+		for (var i in AkaMod.achievements) {
+			var me=AkaMod.achievements[i];
 			str += me.won + ';';
 		}
 		str = str.substr(0, str.length-1);
 
 		//streaming stuff
 		str += "|";
-		str += AkamikebMod.streamData.caughtStreams
+		str += AkaMod.streamData.caughtStreams
 		return str;
 	},
 
-	load:function(str){
+	load:function(str) {
+		if(!str) {
+			return;
+		}
+		if(AkaMod.upgrades.length === 0) {
+			AkaMod.registerUpgrades();
+			AkaMod.registerAchivements();
+		}
 		//do stuff with the string data you saved previously
 		var strarr=str.split('|');
 		//load upgrades
 		var upgradeData = strarr[0].split(';');
 		for(var i in upgradeData){
 			var u = upgradeData[i];
-			AkamikebMod.upgrades[i].unlocked = parseInt(u.charAt(0));
-			AkamikebMod.upgrades[i].bought = parseInt(u.charAt(2));
+			AkaMod.upgrades[i].unlocked = parseInt(u.charAt(0));
+			AkaMod.upgrades[i].bought = parseInt(u.charAt(2));
 		}
 
 		//load achievements
 		var achieves = strarr[1].split(';');
 		for(var i in achieves){
 			if(achieves[i]=='1'){
-				AkamikebMod.achievements[i].won=1;
+				AkaMod.achievements[i].won=1;
 				Game.AchievementsOwned++;
 			}
 		}
 
 		//load streaming stuff
 		var vars = strarr[2].split(';');
-		AkamikebMod.streamData.caughtStreams=parseInt(loadHelper(vars, 0));
+		AkaMod.streamData.caughtStreams=parseInt(loadHelper(vars, 0));
 
 		//recalculate gains at the end.
 		//TODO does CC do this on its own now?
@@ -154,73 +194,58 @@ AkamikebMod = {
 
 	//Check if mike is streaming
 	streamingPoll: () => {
-		//AkamikebMod.akamikebStreaming = Math.random()
-		//Game.Win("Achievement?")
+		//https://developer.mozilla.org/en-US/docs/Web/Guide/AJAX/Getting_Started
+		let httpRequest;
+		// Old compatibility code, no longer needed.
+		if (window.XMLHttpRequest) { // Mozilla, Safari, IE7+ ...
+			httpRequest = new XMLHttpRequest();
+		} else if (window.ActiveXObject) { // IE 6 and older
+			httpRequest = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		httpRequest.onreadystatechange = function(){
+			if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
+				// Everything is good, the response was received.
+				const liveStreamData = JSON.parse(httpRequest.responseText);
+				// version, mikeStreaming, viewerCount, gameName title, bitTotal, hypeLevel
+				AkaMod.streamData = {...AkaMod.streamData, ...liveStreamData};
+				if(AkaMod.streamData.mikeStreaming) {
+					Game.Win("Streamerman");
+					if(AkaMod.streamData.gameName.startsWith("Trials") || AkaMod.streamData.gameName.indexOf("Oxygen Not Included") !== -1) {
+						Game.Win("It's a classic!");
+					}
+					if(AkaMod.streamData.lastStream === undefined) {
+						AkaMod.streamData.caughtStreams++;
+						AkaMod.streamData.lastStream = new Date().toDateString();
+					} else {
+						const testDate = new Date().toDateString();
+						if(testDate !== AkaMod.streamData.lastStream) {
+							AkaMod.streamData.lastStream = testDate;
+							AkaMod.streamData.caughtStreams++;
+							if(AkaMod.streamData.caughtStreams >= 2) {
+								Game.Unlock("I'm A Fan");
+								if(AkaMod.streamData.caughtStreams >= 10) {
+									Game.Unlock("I'm A Big Fan");
+									if(AkaMod.streamData.caughtStreams >= 20) {
+										Game.Unlock("I'm A Super Fan");
+										if(AkaMod.streamData.caughtStreams >= 80) {
+											Game.Unlock("I'm A MEGA Fan");
+											if(AkaMod.streamData.caughtStreams >= 240) {
+												Game.Unlock("I'm A RIDICULOUS Fan");
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		};
+		httpRequest.open('GET', AkaMod.streamData.url, true);
+		httpRequest.send();
+
 		//Game.buffs["akamikeb"] = {};
 		setTimeout(this.streamingPoll, 1000 * 60 * 5);
 	}
 };
-Game.registerMod("akamikeb", AkamikebMod);
-
-
-
-/*Give a buff based on viewers on mikeb streams.
-https://stackoverflow.com/a/60075629
-
-Passive +1% CPS for each 100 bits given in a week. For example: 1000 Bits means 10% boost for the week.
-Passive +1% CPS for each Gifted sub in a week.
-If Mike is live, +1% CPS per viewer.
-If Mike is live 2^(hypeTrainLevel + 1)x cookie clicks.
-Hash the name of mike's game. Map it to a building. Reduce building price by 50%?
-
-[I'm a fan / Catch 2 live streams] Double bonuses from watching live streams!
-[I'm a big fan / Catch 10 live streams] Quadruple bonuses from watching live streams!
-[I'm a super fan / Catch 20 live streams] Quadruple bonuses from watching live streams!
-[I'm a MEGA fan / Catch 80 live streams] Octuple bonuses from watching live streams!
-[I'm a ridiculous fan / Catch 240 live streams] Sexdecuple[spl] bonuses from watching live streams!
-
-<Streamerman> Catch a live stream.
-<It's a classic!> Mike is playing Trials or Oxygen Not Included.
-<No you're not> Rename your bakery to akamikeb.
-*/
-
-/*Sundae is an unlockable pet. Single icon in twitch that I could use for her.
-Poop icon spawns periodically and lowers CPS until clicked.
-Clicking Sundae gives a bunch of cookies but each time you click she has an increased chance to scratch back (Lose 3 Pets of cookies). Give her time or catnip to recover.
-	Max 80% contentment. (Starts at 100 when first unlocking.)
-	Reduce contentment by 10% per pet.
-	Recover 1% every 1 minute.
-	Gain 5 Clicks of cookies per Pet.
-	Lose 3 Pets of cookies per scratch. (still lose the contentment)
-	Poop spawns randomly between 5 and 30 minutes. Reduces CPS by 10%. Click to remove.
-Add catnip to the farm. Bought through Sundae Upgrade.
-Sundae Upgrades unlock based on number of pets, scratches, and poop cleanups.
-Use kitten upgrade icons. There are 18 normal tiers. And 1 red, 1 business, 1 green in buildings,
-
-[Good Kitty / Pet 100 times] Pets give twice as many cookies!
-[Very Good Kitty / Pet 200 times] Pets give twice as many cookies!
-[Very, Very Good Kitty / Pet 500 times] Pets give twice as many cookies!
-[The Best Kitty / Pet 1000 times] Pets give twice as many cookies!
-[Filed Claws / Scratched 20 times] Lose fewer cookies per scratch. (2x pet amount instead of 3x)
-[Sadistic / Scratched 100 times] Sundae no longer loses contentment when scratching you.
-[Happy Kitty / Pet 10 times without getting scratched] Max Contentment increases to 85%.
-[Petting Professional / ?] Sundae is less annoyed when you pet her. Contentment loss down to 8% per pet.
-[Cat Bed / Hit 40% contentment] +1% Contentment recovery per minute.
-[Cat Toy / ?] ?
-[Litter Box / Clean up 10 poops this run] No more poopies to clean up!
-
-<Do you even understand cats?> Hit 0% Contentment.
-<She likes you> Pet 8 times in a minute without getting scratched.
-<Risky Moves> Pet successfully with less than 20% contentment.
-<Master Pet Owner> Buy All Sundae Upgrades.
-*/
-
-//Darnell offers periodic quests. You have certain amount of time to complete the task, and he'll give you a reward if you do.
-//	Icons: Darnell Head, RIP, mikebDarnair, mikebDarnThumb
-//	Unlock upgrades and new quests by completing quests.
-//	Where is the Darnell UI?
-//	Can I make more interesting quests than Buy/Sell/Click X thing Y times?
-//	Get my a nice tall glass of orange juice. (Have to have Orange juice selected in the milk selector.)
-
-//Donkey? New building?
-//Otamatone?
+Game.registerMod("akamikeb", AkaMod);
