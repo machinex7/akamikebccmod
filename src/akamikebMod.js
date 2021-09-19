@@ -45,7 +45,7 @@ loadHelper=function(vars, index){
 //everything goes in here.
 AkaMod = {
 	streamData: {
-		url: "http://mikebstreamcheck-env.eba-brk2myvg.us-west-2.elasticbeanstalk.com/",
+		url: "http://ec2-34-223-52-113.us-west-2.compute.amazonaws.com:3000/",
 		viewerCount: 0,
 		mikeStreaming: false,
 		gameName: "",
@@ -60,53 +60,94 @@ AkaMod = {
 	//set up the hooks.
 	init:function(){
 		//Boost CPS
-		Game.registerHook('cps', (oldCps) => {
+		/*Game.registerHook('cps', (oldCps) => {
 			if(AkaMod.streamData.mikeStreaming) {
 				return oldCps * (1 + AkaMod.computeStreamingBuff() * AkaMod.streamData.viewerCount / 100);
 			}
 			return oldCps;
-		});
+		});*/
 
 		//Boost clicks.
-		Game.registerHook("cookiesPerClick", (oldClicks) => {
+		/*Game.registerHook("cookiesPerClick", (oldClicks) => {
 			if(AkaMod.streamData.mikeStreaming) {
 				return oldClicks * AkaMod.computeStreamingBuff();
 			}
 			return oldClicks;
-		});
+		});*/
 
 		//initial resource loading.
 		Game.registerHook("create", () => {
 			AkaMod.registerUpgrades();
 			AkaMod.registerAchivements();
-		})
+		});
+		new Game.buffType('streaming',function(time, streamingBuff) {
+			return {
+				name:'Streaming',
+				desc:'Increases clicks by '+streamingBuff+'00% and CPS by '+(streamingBuff * AkaMod.streamData.viewerCount / 100)+'% while Mike is streaming!',
+				icon:[28,6],
+				time:time*Game.fps,
+				max:true,
+				multCpS: 1 + streamingBuff * AkaMod.streamData.viewerCount / 100,
+				multClick: streamingBuff,
+				aura:1
+			};
+		});
 
 		//slowtick
-		Game.registerHook("check", () => {
+		/*Game.registerHook("check", () => {
 			
-		});
+		});*/
 
 		AkaMod.bakeryNameSet=Game.bakeryNameSet;
 		Game.bakeryNameSet=function(what){
 			if(what.toLowerCase() == 'akamikeb'){
-				Game.Win("No, you're a fony");
+				Game.Win("No, you're a Fony");
+				what = "Fony";
 			}
-			BenMod.bakeryNameSet(what);
+			AkaMod.bakeryNameSet(what);
 		}
 
-		setTimeout(AkaMod.streamingPoll, 100);
+		//'reset' - called whenever the player resets; parameter is true if this is a hard reset, false if it's an ascension
+
+		//'reincarnate' - called when the player has reincarnated after an ascension
+		Game.registerHook('reincarnate', () => {
+			//reset upgrades
+			for (var i in AkaMod.upgrades) {
+				var me=AkaMod.upgrades[i];
+				me.unlocked=0;me.bought=0;
+			}
+		});
+
+		setTimeout(AkaMod.streamingPoll, 1000);
 		Game.Popup("AkamikebB mod loaded!");
 	},
 
 	//Figures out the CPS and click boost from mike streaming.
 	computeStreamingBuff: () => {
+		if(!AkaMod.streamData.mikeStreaming) {
+			return 1;
+		}
 		let factor = 1;
-		if(Game.Has("I'm a fan")) {
+		if(Game.Has("I'm A Fan")) {
 			factor = 2;
 		}
+		if(Game.Has("I'm A Big Fan")) {
+			factor *= 2;
+		}
+		if(Game.Has("I'm A Super Fan")) {
+			factor *= 2;
+		}
+		if(Game.Has("I'm A MEGA Fan")) {
+			factor *= 2;
+		}
+		if(Game.Has("I'm A RIDICULOUS Fan")) {
+			factor *= 2;
+		}
+
 		return factor;
 	},
 
+	//register all upgrades
 	registerUpgrades: () => {
 		if(AkaMod.upgrades.length !== 0) {
 			return; //don't load twice
@@ -114,12 +155,13 @@ AkaMod = {
 		//Game.Upgrade=function(name,desc,price,icon,buyFunction)
 		Game.order = 1000;
 		AkaMod.upgrades.push(new Game.Upgrade("I'm A Fan","Double bonus from watching live streams!<q>How's this twitch thing work?</q>",cnum(700,'t'),[19,3]));
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A Big Fan","Quadruple bonus from watching live streams!<q>So I press this button to stream...</q>",cnum(700,'t'),[19,3]));
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A Super Fan","Octuple bonus from watching live streams!<q>And I can chat right here...</q>",cnum(700,'t'),[19,3]));
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A MEGA Fan","Sexdecuple bonus from watching live streams!<q>And the streamer video goes here...</q>",cnum(700,'t'),[19,3]));
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A RIDICULOUS Fan","Duotredicuple(???) bonus from watching live streams!<q>Oh, that's how it works.</q>",cnum(700,'t'),[19,3]));
+		AkaMod.upgrades.push(new Game.Upgrade("I'm A Big Fan","Another double bonus from watching live streams!<q>So I press this button to stream...</q>",cnum(700,'t'),[19,3]));
+		AkaMod.upgrades.push(new Game.Upgrade("I'm A Super Fan","Another double bonus from watching live streams!<q>And I can chat right here...</q>",cnum(700,'t'),[19,3]));
+		AkaMod.upgrades.push(new Game.Upgrade("I'm A MEGA Fan","Another double bonus from watching live streams!<q>And the streamer video goes here...</q>",cnum(700,'t'),[19,3]));
+		AkaMod.upgrades.push(new Game.Upgrade("I'm A RIDICULOUS Fan","Another double bonus from watching live streams!<q>Oh, that's how it works.</q>",cnum(700,'t'),[19,3]));
 	},
 
+	//register all achievements.
 	registerAchivements: () => {
 		if(AkaMod.achievements.length !== 0) {
 			return; //don't load twice
@@ -128,7 +170,7 @@ AkaMod = {
 		//streamer achievements
 		AkaMod.achievements.push(new Game.Achievement("Streamerman", "Catch a live stream!", [16,5]));
 		AkaMod.achievements.push(new Game.Achievement("It's a classic!", "Mike is playing Trials or Oxygen Not Included", [8,0]));
-		AkaMod.achievements.push(new Game.Achievement("No, you're a fony", "Rename your bakery to akamikeb", [28,7]));
+		AkaMod.achievements.push(new Game.Achievement("No, you're a Fony", "Rename your bakery to akamikeb", [28,7]));
 	},
 
 	save:function(){
@@ -206,9 +248,10 @@ AkaMod = {
 			if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
 				// Everything is good, the response was received.
 				const liveStreamData = JSON.parse(httpRequest.responseText);
+				const oldmikeStreaming = AkaMod.streamData.mikeStreaming;
 				// version, mikeStreaming, viewerCount, gameName title, bitTotal, hypeLevel
 				AkaMod.streamData = {...AkaMod.streamData, ...liveStreamData};
-				if(AkaMod.streamData.mikeStreaming) {
+				if(!oldmikeStreaming && AkaMod.streamData.mikeStreaming) {
 					Game.Win("Streamerman");
 					if(AkaMod.streamData.gameName.startsWith("Trials") || AkaMod.streamData.gameName.indexOf("Oxygen Not Included") !== -1) {
 						Game.Win("It's a classic!");
@@ -238,6 +281,7 @@ AkaMod = {
 							}
 						}
 					}
+					Game.gainBuff("streaming",60*2,AkaMod.computeStreamingBuff()); //buff lasts for 2 minutes after mike stops streaming.
 				}
 			}
 		};

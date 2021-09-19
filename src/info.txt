@@ -1,0 +1,11 @@
+{
+	"Name": "AkaMikeB Mod",
+	"ID": "akamikeb",
+	"Author": "MachineX7",
+	"Description": "A mod themed around AkaMikeB, giving boosts while he's streaming.",
+	"ModVersion": 1,
+	"GameVersion": 2.031,
+	"Date": "18/09/2021",
+	"Dependencies": [],
+	"Disabled": 1
+}
