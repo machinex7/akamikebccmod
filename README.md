@@ -1,6 +1,8 @@
 # akamikebccmod
 A Cookie Clicker mod for fans of AkaMikeB!
 
+This is still a WIP, so not everything it tested yet.
+
 ## Features
 <b>V1</b>
 * CPS and Clicking buff when Mike is streaming on <a href="https://www.twitch.tv/akamikeb">Twitch</a>.
@@ -19,4 +21,6 @@ Basically, you need to download the akamikebMod.js file and info.txt file and pu
 8. Select it, then click the Enable button!
 
 ### Web Version
-TODO
+Much easier.
+1. Drag this <a href="javascript: Game.LoadMod('https://machinex7.github.io/akamikebccmod/src/akamikebMod.js');">link</a> to your browser bookmark's bar.
+2. When you're on the cookie clicker website, click the button!
