@@ -79,18 +79,10 @@ AkaMod = {
 		Game.registerHook("create", () => {
 			AkaMod.registerUpgrades();
 			AkaMod.registerAchivements();
+			AkaMod.registerBuffs();
+			setTimeout(AkaMod.streamingPoll, 1000);
 		});
-		new Game.buffType('streaming',function(time, streamingBuff) {
-			return {
-				name:'Streaming',
-				desc:'Increases clicks by '+streamingBuff+'00% and CPS by '+(streamingBuff/2)+'% per viewer while Mike is streaming!',
-				icon:[28,6],
-				time:time*Game.fps,
-				max:true,
-				multCpS: 1 + streamingBuff * AkaMod.streamData.viewerCount / 200,
-				multClick: streamingBuff
-			};
-		});
+
 
 		//slowtick
 		/*Game.registerHook("check", () => {
@@ -117,7 +109,6 @@ AkaMod = {
 			}
 		});
 
-		setTimeout(AkaMod.streamingPoll, 1000);
 		Game.Popup("AkamikebB mod loaded!");
 	},
 
@@ -148,11 +139,29 @@ AkaMod = {
 	//refresh the buff we get while streaming.
 	refreshStreamingBuff: () => {
 		if(AkaMod.streamData.mikeStreaming) {
+			AkaMod.registerBuffs();
 			Game.killBuff("Streaming");
 			setTimeout(() => {
 				Game.gainBuff('streaming',60*2,AkaMod.computeStreamingBuff());
 			}, 1000 / Game.fps);
 		}
+	},
+
+	registerBuffs: () => {
+		if(Game.buffTypesByName.streaming) {
+			return;
+		}
+		new Game.buffType('streaming',function(time, streamingBuff) {
+			return {
+				name:'Streaming',
+				desc:'Increases clicks by '+streamingBuff+'00% and CPS by '+(streamingBuff/2)+'% per viewer while Mike is streaming!',
+				icon:[28,6],
+				time:time*Game.fps,
+				max:true,
+				multCpS: 1 + streamingBuff * AkaMod.streamData.viewerCount / 200,
+				multClick: streamingBuff
+			};
+		});
 	},
 
 	//register all upgrades
@@ -258,6 +267,7 @@ AkaMod = {
 			if (httpRequest.readyState === XMLHttpRequest.DONE) {
 				if(httpRequest.status !== 200) {
 					//something went wrong! Try again later.
+					Game.Popup("http call failed with " + httpRequest.status);
 					setTimeout(this.streamingPoll, 1000 * 60 * 5); //poll every 5 minutes.
 					return;
 				}
@@ -267,6 +277,7 @@ AkaMod = {
 				// version, mikeStreaming, viewerCount, gameName title, bitTotal, hypeLevel
 				AkaMod.streamData = {...AkaMod.streamData, ...liveStreamData};
 				if(!oldmikeStreaming && AkaMod.streamData.mikeStreaming) {
+					Game.Popup("Mike is streaming!");
 					Game.Win("Streamerman");
 					if(AkaMod.streamData.gameName.startsWith("Trials") || AkaMod.streamData.gameName.indexOf("Oxygen Not Included") !== -1) {
 						Game.Win("It's a classic!");
@@ -298,7 +309,7 @@ AkaMod = {
 					}
 				}
 				if(AkaMod.streamData.mikeStreaming) {
-					Game.gainBuff('streaming',60*2,AkaMod.computeStreamingBuff()); //buff lasts for 2 minutes after mike stops streaming.
+					AkaMod.refreshStreamingBuff();
 					setTimeout(AkaMod.streamingPoll, 1000 * 60); //poll every minute
 				} else {
 					setTimeout(AkaMod.streamingPoll, 1000 * 60 * 5); //poll every 5 minutes.
@@ -306,6 +317,8 @@ AkaMod = {
 			}
 		};
 		httpRequest.open('GET', AkaMod.streamData.url, true);
+		httpRequest.setRequestHeader('Content-Type','text/json');
+		httpRequest.overrideMimeType('text/json');
 		httpRequest.send();
 	}
 };
