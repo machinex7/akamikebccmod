@@ -1,4 +1,4 @@
-# akamikebccmod
+# AkaMikeB CookieClicker Mod
 A Cookie Clicker mod for fans of AkaMikeB!
 
 This is still a WIP, so not everything it tested yet.
