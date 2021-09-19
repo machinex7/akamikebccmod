@@ -13,7 +13,7 @@ Basically, you need to download the akamikebMod.js file and info.txt file and pu
 2. Click the Manage Mods button, all the way down at the bottom.
 3. Click the Open /mods folder button.
 4. Open the "local" directory and create a new folder, named "akamikeb".
-5. Download the akamikebMod.js file and the info.txt file from the src directory of this repository.
+5. Download <a href="/src/akamikebmod.js">akamikebMod.js</a> and <a href="/src/info.txt">info.txt</a> from the src directory of this repository.
 6. Place the downloaded files in the newly created akamikeb folder.
 7. In Cookie Clicker, close and re-open the Mod Manager. You should now see the AkaMikeB Mod.
 8. Select it, then click the Enable button!
