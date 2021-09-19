@@ -1,7 +1,6 @@
 # AkaMikeB CookieClicker Mod
 A Cookie Clicker mod for fans of AkaMikeB!
 
-This is still a WIP, so not everything it tested yet.
 
 ## Features
 <b>V1</b>
@@ -10,6 +9,7 @@ This is still a WIP, so not everything it tested yet.
 
 ## Installation
 ### Steam App
+Not working yet! But the Web Version works.
 Basically, you need to download the akamikebMod.js file and info.txt file and put them in your local mod directory. Here's the detailed instructions on how to do that.
 1. Open the Cookie Clicker game, and go to the Options tab.
 2. Click the Manage Mods button, all the way down at the bottom.
