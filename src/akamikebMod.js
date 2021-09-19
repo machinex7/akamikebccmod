@@ -83,13 +83,12 @@ AkaMod = {
 		new Game.buffType('streaming',function(time, streamingBuff) {
 			return {
 				name:'Streaming',
-				desc:'Increases clicks by '+streamingBuff+'00% and CPS by '+(streamingBuff * AkaMod.streamData.viewerCount / 100)+'% while Mike is streaming!',
+				desc:'Increases clicks by '+streamingBuff+'00% and CPS by '+(streamingBuff/2)+'% per viewer while Mike is streaming!',
 				icon:[28,6],
 				time:time*Game.fps,
 				max:true,
-				multCpS: 1 + streamingBuff * AkaMod.streamData.viewerCount / 100,
-				multClick: streamingBuff,
-				aura:1
+				multCpS: 1 + streamingBuff * AkaMod.streamData.viewerCount / 200,
+				multClick: streamingBuff
 			};
 		});
 
@@ -146,6 +145,15 @@ AkaMod = {
 
 		return factor;
 	},
+	//refresh the buff we get while streaming.
+	refreshStreamingBuff: () => {
+		if(AkaMod.streamData.mikeStreaming) {
+			Game.killBuff("Streaming");
+			setTimeout(() => {
+				Game.gainBuff('streaming',60*2,AkaMod.computeStreamingBuff());
+			}, 1000 / Game.fps);
+		}
+	},
 
 	//register all upgrades
 	registerUpgrades: () => {
@@ -154,11 +162,11 @@ AkaMod = {
 		}
 		//Game.Upgrade=function(name,desc,price,icon,buyFunction)
 		Game.order = 1000;
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A Fan","Double bonus from watching live streams!<q>How's this twitch thing work?</q>",cnum(700,'t'),[19,3]));
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A Big Fan","Another double bonus from watching live streams!<q>So I press this button to stream...</q>",cnum(700,'t'),[19,3]));
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A Super Fan","Another double bonus from watching live streams!<q>And I can chat right here...</q>",cnum(700,'t'),[19,3]));
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A MEGA Fan","Another double bonus from watching live streams!<q>And the streamer video goes here...</q>",cnum(700,'t'),[19,3]));
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A RIDICULOUS Fan","Another double bonus from watching live streams!<q>Oh, that's how it works.</q>",cnum(700,'t'),[19,3]));
+		AkaMod.upgrades.push(new Game.Upgrade("I'm A Fan","Double bonus from watching live streams!<q>How's this twitch thing work?</q>",cnum(700,'t'),[19,3], AkaMod.refreshStreamingBuff));
+		AkaMod.upgrades.push(new Game.Upgrade("I'm A Big Fan","Another double bonus from watching live streams!<q>So I press this button to stream...</q>",cnum(700,'t'),[19,3], AkaMod.refreshStreamingBuff));
+		AkaMod.upgrades.push(new Game.Upgrade("I'm A Super Fan","Another double bonus from watching live streams!<q>And I can chat right here...</q>",cnum(700,'t'),[19,3], AkaMod.refreshStreamingBuff));
+		AkaMod.upgrades.push(new Game.Upgrade("I'm A MEGA Fan","Another double bonus from watching live streams!<q>And the streamer video goes here...</q>",cnum(700,'t'),[19,3], AkaMod.refreshStreamingBuff));
+		AkaMod.upgrades.push(new Game.Upgrade("I'm A RIDICULOUS Fan","Another double bonus from watching live streams!<q>Oh, that's how it works.</q>",cnum(700,'t'),[19,3], AkaMod.refreshStreamingBuff));
 	},
 
 	//register all achievements.
@@ -193,7 +201,8 @@ AkaMod = {
 
 		//streaming stuff
 		str += "|";
-		str += AkaMod.streamData.caughtStreams
+		str += AkaMod.streamData.caughtStreams + ";";
+		str += AkaMod.streamData.lastStream;
 		return str;
 	},
 
@@ -227,6 +236,7 @@ AkaMod = {
 		//load streaming stuff
 		var vars = strarr[2].split(';');
 		AkaMod.streamData.caughtStreams=parseInt(loadHelper(vars, 0));
+		AkaMod.streamData.lastStream=loadHelper(vars, 1);
 
 		//recalculate gains at the end.
 		//TODO does CC do this on its own now?
@@ -245,7 +255,12 @@ AkaMod = {
 			httpRequest = new ActiveXObject("Microsoft.XMLHTTP");
 		}
 		httpRequest.onreadystatechange = function(){
-			if (httpRequest.readyState === XMLHttpRequest.DONE && httpRequest.status === 200) {
+			if (httpRequest.readyState === XMLHttpRequest.DONE) {
+				if(httpRequest.status !== 200) {
+					//something went wrong! Try again later.
+					setTimeout(this.streamingPoll, 1000 * 60 * 5); //poll every 5 minutes.
+					return;
+				}
 				// Everything is good, the response was received.
 				const liveStreamData = JSON.parse(httpRequest.responseText);
 				const oldmikeStreaming = AkaMod.streamData.mikeStreaming;
@@ -281,15 +296,17 @@ AkaMod = {
 							}
 						}
 					}
-					Game.gainBuff("streaming",60*2,AkaMod.computeStreamingBuff()); //buff lasts for 2 minutes after mike stops streaming.
+				}
+				if(AkaMod.streamData.mikeStreaming) {
+					Game.gainBuff('streaming',60*2,AkaMod.computeStreamingBuff()); //buff lasts for 2 minutes after mike stops streaming.
+					setTimeout(AkaMod.streamingPoll, 1000 * 60); //poll every minute
+				} else {
+					setTimeout(AkaMod.streamingPoll, 1000 * 60 * 5); //poll every 5 minutes.
 				}
 			}
 		};
 		httpRequest.open('GET', AkaMod.streamData.url, true);
 		httpRequest.send();
-
-		//Game.buffs["akamikeb"] = {};
-		setTimeout(this.streamingPoll, 1000 * 60 * 5);
 	}
 };
 Game.registerMod("akamikeb", AkaMod);
