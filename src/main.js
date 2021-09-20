@@ -51,7 +51,7 @@ AkaMod = {
 		gameName: "",
 		title: "",
 		caughtStreams: 0,
-		lastStream: undefined
+		lastStream: "Mon Jan 01 1970"
 	},
 
 	upgrades: [],
@@ -77,13 +77,14 @@ AkaMod = {
 
 		//initial resource loading.
 		Game.registerHook("create", () => {
+			//This seems to only be called in the APP. It is called after all the other upgrades and achievments are registered.
 			AkaMod.registerUpgrades();
 			AkaMod.registerAchivements();
 			AkaMod.registerBuffs();
 		});
 
 		//slowtick
-		/*Game.registerHook("check", () => {});*/
+		Game.registerHook("check", AkaMod.check);
 
 		AkaMod.bakeryNameSet=Game.bakeryNameSet;
 		Game.bakeryNameSet=function(what){
@@ -107,6 +108,13 @@ AkaMod = {
 
 		Game.Popup("AkamikebB mod loaded!");
 		setTimeout(AkaMod.streamingPoll, 1000); //wait a second so the load or Create finishes.
+	},
+
+	//This is called every frame. So be careful with this.
+	check: function(){
+		if(new Date().toDateString().indexOf('Sep 20') >= 0) {
+			Game.Win("Happy Birthday Mike!");
+		}
 	},
 
 	//Figures out the CPS and click boost from mike streaming.
@@ -148,11 +156,11 @@ AkaMod = {
 		if(Game.buffTypesByName.streaming) {
 			return;
 		}
-		const boost = streamingBuff * AkaMod.streamData.viewerCount / 200;
 		new Game.buffType('streaming',function(time, streamingBuff) {
+			const boost = streamingBuff * AkaMod.streamData.viewerCount / 200;
 			return {
 				name:'Streaming',
-				desc:'CPS boosted by ' + boost + '% due to ' + AkaMod.streamData.viewerCount + ' viewers, and click gains increased by '+streamingBuff+'00% while Mike is streaming!',
+				desc:'Mike is Streaming! Clicks boosted by ' + streamingBuff + '00%! ' + AkaMod.streamData.viewerCount + ' viewers are boosting CPS by ' + (boost*100) + '%!',
 				icon:[28,6],
 				time:time*Game.fps,
 				max:true,
@@ -170,18 +178,18 @@ AkaMod = {
 		}
 		//Game.Upgrade=function(name,desc,price,icon,buyFunction)
 		Game.order = 1000;
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A Fan","Double bonus from watching live streams!<q>How's this twitch thing work?</q>",cnum(700,'t'),[19,3], AkaMod.refreshStreamingBuff));
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A Big Fan","Another double bonus from watching live streams!<q>So I press this button to stream...</q>",cnum(700,'t'),[19,3], AkaMod.refreshStreamingBuff));
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A Super Fan","Another double bonus from watching live streams!<q>And I can chat right here...</q>",cnum(700,'t'),[19,3], AkaMod.refreshStreamingBuff));
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A MEGA Fan","Another double bonus from watching live streams!<q>And the streamer video goes here...</q>",cnum(700,'t'),[19,3], AkaMod.refreshStreamingBuff));
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A RIDICULOUS Fan","Another double bonus from watching live streams!<q>Oh, that's how it works.</q>",cnum(700,'t'),[19,3], AkaMod.refreshStreamingBuff));
+		AkaMod.upgrades.push(new Game.Upgrade("I'm A Fan","Double bonus from watching live streams!<q>How's this twitch thing work?</q>",cnum(400,'m'),[19,3], AkaMod.refreshStreamingBuff));
+		AkaMod.upgrades.push(new Game.Upgrade("I'm A Big Fan","Another double bonus from watching live streams!<q>So I press this button to stream...</q>",cnum(400,'b'),[20,3], AkaMod.refreshStreamingBuff));
+		AkaMod.upgrades.push(new Game.Upgrade("I'm A Super Fan","Another double bonus from watching live streams!<q>And I can chat right here...</q>",cnum(400,'t'),[21,3], AkaMod.refreshStreamingBuff));
+		AkaMod.upgrades.push(new Game.Upgrade("I'm A MEGA Fan","Another double bonus from watching live streams!<q>And the streamer video goes here...</q>",cnum(400,'qa'),[19,4], AkaMod.refreshStreamingBuff));
+		AkaMod.upgrades.push(new Game.Upgrade("I'm A RIDICULOUS Fan","Another double bonus from watching live streams!<q>Oh, that's how it works.</q>",cnum(400,'qi'),[20,4], AkaMod.refreshStreamingBuff));
 		AkaMod.loadUpgrades();
 	},
 	loadUpgrades: () => {
 		if(AkaMod.loadedUpgradeString === undefined || AkaMod.upgrades.length === 0) {
 			return;
 		}
-		var upgradeData = loadedUpgradeString.split(';');
+		var upgradeData = AkaMod.loadedUpgradeString.split(';');
 		for(var i in upgradeData){
 			var u = upgradeData[i];
 			AkaMod.upgrades[i].unlocked = parseInt(u.charAt(0));
@@ -200,13 +208,15 @@ AkaMod = {
 		AkaMod.achievements.push(new Game.Achievement("Streamerman", "Catch a live stream!", [16,5]));
 		AkaMod.achievements.push(new Game.Achievement("It's a classic!", "Mike is playing Trials or Oxygen Not Included", [8,0]));
 		AkaMod.achievements.push(new Game.Achievement("No, you're a Fony", "Rename your bakery to akamikeb", [28,7]));
+		AkaMod.achievements.push(new Game.Achievement("Happy Birthday Mike!", "Play on Mike's Birthday!", [22,13]));
+
 		AkaMod.loadAchievements();
 	},
 	loadAchievements: () => {
-		if(AkaMod.loadedUpgradeString === undefined || AkaMod.upgrades.length === 0) {
+		if(AkaMod.loadedAchievementString === undefined || AkaMod.achievements.length === 0) {
 			return;
 		}
-		var achieves = loadedAchievementString.split(';');
+		var achieves = AkaMod.loadedAchievementString.split(';');
 		for(var i in achieves){
 			if(achieves[i]=='1'){
 				AkaMod.achievements[i].won=1;
@@ -215,23 +225,28 @@ AkaMod = {
 		}
 	},
 
+	//Save the mod data.
 	save:function(){
 		//use this to store persistent data associated with your mod
 		let str = "";
 		//save ugprades
 		for (var i in AkaMod.upgrades) { //upgrades
-			var me=AkaMod.upgrades[i];
+			const me = AkaMod.upgrades[i];
 			str += me.unlocked + ',' + me.bought + ';';
 		}
-		str = str.substr(0, str.length-1);
+		if(AkaMod.upgrades.length !== 0) { //only fails when there's a load error
+			str = str.substr(0, str.length-1);
+		}
 
 		//save achievements
 		str+='|';
 		for (var i in AkaMod.achievements) {
-			var me=AkaMod.achievements[i];
+			const me = AkaMod.achievements[i];
 			str += me.won + ';';
 		}
-		str = str.substr(0, str.length-1);
+		if(AkaMod.achievements.length !== 0) { //only fails when there's a load error
+			str = str.substr(0, str.length-1);
+		}
 
 		//streaming stuff
 		str += "|";
@@ -241,18 +256,22 @@ AkaMod = {
 	},
 
 	load:function(str) {
+		if(Game.UpgradesN > 1) {
+			//If we are running on the webapp, we need to register our data before doing the load.
+			//On the webapp, create is already called.
+			Game.runModHook('create');
+		}
 		if(!str) {
 			return;
 		}
-		//TODO load gets called before create. This is causing issues on the APP. The web seems to fine, since all the upgrades and achievements are already loaded.
-		/*if(AkaMod.upgrades.length === 0) {
-			AkaMod.registerUpgrades();
-			AkaMod.registerAchivements();
-		}*/
 		try{
 			//do stuff with the string data you saved previously
-			Game.Popup(str);
 			var strarr=str.split('|');
+			if(strarr.length != 3) {
+				Game.Popup("AkamikeB Mod data is corrupt!");
+				console.log(str);
+				return;
+			}
 			//load upgrades
 			AkaMod.loadedUpgradeString = strarr[0];
 			AkaMod.loadUpgrades();
@@ -267,7 +286,6 @@ AkaMod = {
 			AkaMod.streamData.lastStream=loadHelper(vars, 1);
 
 			//recalculate gains at the end.
-			//TODO does CC do this on its own now?
 			Game.CalculateGains();
 			Game.RebuildUpgrades();
 		} catch (err) {
@@ -340,8 +358,8 @@ AkaMod = {
 			}
 		};
 		httpRequest.open('GET', AkaMod.streamData.url, true);
-		httpRequest.setRequestHeader('Content-Type','text/json');
-		httpRequest.overrideMimeType('text/json');
+		//httpRequest.setRequestHeader('Content-Type','text/json');
+		//httpRequest.overrideMimeType('text/json');
 		httpRequest.send();
 	}
 };
