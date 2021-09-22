@@ -110,7 +110,7 @@ AkaMod = {
 		setTimeout(AkaMod.streamingPoll, 1000); //wait a second so the load or Create finishes.
 	},
 
-	//This is called every frame. So be careful with this.
+	//This is called every 5 seconds.
 	check: function(){
 		if(new Date().toDateString().indexOf('Sep 20') >= 0) {
 			Game.Win("Happy Birthday Mike!");
@@ -170,6 +170,14 @@ AkaMod = {
 		});
 	},
 
+	//redefine the Upgrade constructor. The localization thing is causing bugs for me.
+	Upgrade: (name,desc,price,icon,buyFunction) => {
+		const upgrd = new Game.Upgrade(name,desc,price,icon,buyFunction);
+		AkaMod.upgrades.push(upgrd);
+		upgrd.dname = upgrd.name;
+		upgrd.ddesc = upgrd.desc;
+	},
+
 	//register all upgrades
 	loadedUpgradeString: undefined,
 	registerUpgrades: () => {
@@ -177,15 +185,15 @@ AkaMod = {
 			return; //don't load twice
 		}
 		//Game.Upgrade=function(name,desc,price,icon,buyFunction)
-		Game.order = 1000;
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A Fan","Double bonus from watching live streams!<q>How's this twitch thing work?</q>",cnum(400,'m'),[19,3], AkaMod.refreshStreamingBuff));
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A Big Fan","Another double bonus from watching live streams!<q>So I press this button to stream...</q>",cnum(400,'b'),[20,3], AkaMod.refreshStreamingBuff));
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A Super Fan","Another double bonus from watching live streams!<q>And I can chat right here...</q>",cnum(400,'t'),[21,3], AkaMod.refreshStreamingBuff));
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A MEGA Fan","Another double bonus from watching live streams!<q>And the streamer video goes here...</q>",cnum(400,'qa'),[19,4], AkaMod.refreshStreamingBuff));
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A RIDICULOUS Fan","Another double bonus from watching live streams!<q>Oh, that's how it works.</q>",cnum(400,'qi'),[20,4], AkaMod.refreshStreamingBuff));
+		AkaMod.Upgrade("I'm A Fan","Double bonus from watching live streams!<q>How's this twitch thing work?</q>",cnum(400,'m'),[19,3], AkaMod.refreshStreamingBuff);
+		AkaMod.Upgrade("I'm A Big Fan","Another double bonus from watching live streams!<q>So I press this button to stream...</q>",cnum(400,'b'),[20,3], AkaMod.refreshStreamingBuff);
+		AkaMod.Upgrade("I'm A Super Fan","Another double bonus from watching live streams!<q>And I can chat right here...</q>",cnum(400,'t'),[21,3], AkaMod.refreshStreamingBuff);
+		AkaMod.Upgrade("I'm A MEGA Fan","Another double bonus from watching live streams!<q>And the streamer video goes here...</q>",cnum(400,'qa'),[19,4], AkaMod.refreshStreamingBuff);
+		AkaMod.Upgrade("I'm A RIDICULOUS Fan","Another double bonus from watching live streams!<q>Oh, that's how it works.</q>",cnum(400,'qi'),[20,4], AkaMod.refreshStreamingBuff);
+		
 		AkaMod.loadUpgrades();
 	},
-	loadUpgrades: () => {
+	loadUpgrades: () => { //loads upgrades from save data.
 		if(AkaMod.loadedUpgradeString === undefined || AkaMod.upgrades.length === 0) {
 			return;
 		}
@@ -194,7 +202,20 @@ AkaMod = {
 			var u = upgradeData[i];
 			AkaMod.upgrades[i].unlocked = parseInt(u.charAt(0));
 			AkaMod.upgrades[i].bought = parseInt(u.charAt(2));
+			if(isNaN(AkaMod.upgrades[i].unlocked)) { //I don't think this should happen anymore, but I want to monitor just in case.
+				console.error("Failed to load upgrade " + i + " data:" + u);
+				AkaMod.upgrades[i].unlocked = 0;
+				AkaMod.upgrades[i].bought = 0;
+			}
 		}
+	},
+
+	//redefine the Achievement constructor. The localization thing is causing bugs for me.
+	Achievement: (name,desc,icon) => {
+		const ach = new Game.Achievement(name,desc,icon);
+		AkaMod.achievements.push(ach);
+		ach.dname = ach.name;
+		ach.ddesc = ach.desc;
 	},
 
 	//register all achievements.
@@ -205,14 +226,14 @@ AkaMod = {
 		}
 		//Game.Achievement=function(name,desc,icon)
 		//streamer achievements
-		AkaMod.achievements.push(new Game.Achievement("Streamerman", "Catch a live stream!", [16,5]));
-		AkaMod.achievements.push(new Game.Achievement("It's a classic!", "Mike is playing Trials or Oxygen Not Included", [8,0]));
-		AkaMod.achievements.push(new Game.Achievement("No, you're a Fony", "Rename your bakery to akamikeb", [28,7]));
-		AkaMod.achievements.push(new Game.Achievement("Happy Birthday Mike!", "Play on Mike's Birthday!", [22,13]));
+		AkaMod.Achievement("Streamerman", "Catch a live stream!", [16,5]);
+		AkaMod.Achievement("It's a classic!", "Mike is playing Trials or Oxygen Not Included", [8,0]);
+		AkaMod.Achievement("No, you're a Fony", "Rename your bakery to akamikeb", [28,7]);
+		AkaMod.Achievement("Happy Birthday Mike!", "Play on Mike's Birthday!", [22,13]);
 
 		AkaMod.loadAchievements();
 	},
-	loadAchievements: () => {
+	loadAchievements: () => { //loads achievements from save data.
 		if(AkaMod.loadedAchievementString === undefined || AkaMod.achievements.length === 0) {
 			return;
 		}
@@ -255,7 +276,9 @@ AkaMod = {
 		return str;
 	},
 
+	//Load save data.
 	load:function(str) {
+		//Loading is janky due to supporting both the steam app and website. Loading stuf happens in a different order.
 		if(Game.UpgradesN > 1) {
 			//If we are running on the webapp, we need to register our data before doing the load.
 			//On the webapp, create is already called.
