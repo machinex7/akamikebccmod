@@ -53,6 +53,16 @@ AkaMod = {
 		caughtStreams: 0,
 		lastStream: "Mon Jan 01 1970"
 	},
+	sundaeData: {
+		totalPets: 0,
+		totalScratches: 0,
+		mood: 100,
+		maxMood: 80,
+		moodReduction: 10,
+		moodRecovery: 1,
+		cookieGains: 5,
+		scratchLoss: 3,
+	},
 
 	upgrades: [],
 	achievements: [],
@@ -106,14 +116,22 @@ AkaMod = {
 			}
 		});
 
+		//AkaMod.initSundaeStuff();
+
 		Game.Popup("AkamikebB mod loaded!");
 		setTimeout(AkaMod.streamingPoll, 1000); //wait a second so the load or Create finishes.
 	},
 
-	//This is called every frame. So be careful with this.
+	//This is called every 5 seconds.
 	check: function(){
 		if(new Date().toDateString().indexOf('Sep 20') >= 0) {
 			Game.Win("Happy Birthday Mike!");
+		}
+
+		if(Game.Has("Sundae!")) {
+			if(AkaMod.sundaeData.mood < AkaMod.sundaeData.maxMood) {
+				AkaMod.sundaeData.mood += AkaMod.sundaeData.moodRecovery / 12;
+			}
 		}
 	},
 
@@ -152,6 +170,118 @@ AkaMod = {
 		}
 	},
 
+	initSundaeStuff: () => {
+		Game.UpdateSpecial=function() {
+			Game.specialTabs=[];
+			if (Game.Has('A festive hat')) Game.specialTabs.push('santa');
+			if (Game.Has('A crumbly egg')) Game.specialTabs.push('dragon');
+			if (Game.Has("It's Sundae!")) Game.specialTabs.push('sundae');
+			if (Game.specialTabs.length==0) {Game.ToggleSpecialMenu(0);return;}
+		
+			if (Game.LeftBackground)
+			{
+				Game.specialTabHovered='';
+				var len=Game.specialTabs.length;
+				if (len==0) return;
+				var y=Game.LeftBackground.canvas.height-24-48*len;
+				for (var i=0;i<Game.specialTabs.length;i++)
+				{
+					var selected=0;
+					if (Game.specialTab==Game.specialTabs[i]) selected=1;
+					var x=24;
+					var s=1;
+					if (selected) {s=2;x+=24;}
+					
+					if (Math.abs(Game.mouseX-x)<=24*s && Math.abs(Game.mouseY-y)<=24*s)
+					{
+						Game.specialTabHovered=Game.specialTabs[i];
+						Game.mousePointer=1;
+						Game.CanClick=0;
+						if (Game.Click && Game.lastClickedEl==l('backgroundLeftCanvas'))
+						{
+							if (Game.specialTab!=Game.specialTabs[i]) {Game.specialTab=Game.specialTabs[i];Game.ToggleSpecialMenu(1);PlaySound('snd/press.mp3');}
+							else {Game.ToggleSpecialMenu(0);PlaySound('snd/press.mp3');}
+						}
+					}
+					
+					y+=48;
+				}
+			}
+		};
+
+		//This is called when clicking the special thing in the LR.
+		AkaMod.ToggleSpecialMenu = Game.ToggleSpecialMenu;
+		Game.ToggleSpecialMenu=function(on) {
+			AkaMod.ToggleSpecialMenu(on);
+			if(on && Game.specialTab=='sundae') {
+				//try to pet her.
+				if(Math.random() * 100 < AkaMod.sundaeData.mood) {
+					//pet!
+					AkaMod.sundaeData.totalPets++;
+					AkaMod.sundaeData.mood -= AkaMod.sundaeData.moodReduction;
+					Game.Earn(Game.computedMouseCps * AkaMod.sundaeData.cookieGains);
+					//TODO animate
+					//TODO unlocks and achievements.
+				} else {
+					//scratch!
+					AkaMod.sundaeData.mood -= AkaMod.sundaeData.moodReduction;
+					Game.Spend(Game.computedMouseCps * AkaMod.sundaeData.scratchLoss);
+					//TODO animate
+					//TODO unlocks and achievements.
+				}
+				//l('specialPopup').innerHTML=str;
+				//l('specialPopup').className='framed prompt onScreen';
+			}
+		}
+		//just draw the thing in the BL.
+		Game.DrawSpecial=function()
+		{
+			var len=Game.specialTabs.length;
+			if (len==0) return;
+			Game.LeftBackground.globalAlpha=1;
+			var y=Game.LeftBackground.canvas.height-24-48*len;
+			var tabI=0;
+			
+			for (var i in Game.specialTabs)
+			{
+				var selected=0;
+				var hovered=0;
+				if (Game.specialTab==Game.specialTabs[i]) selected=1;
+				if (Game.specialTabHovered==Game.specialTabs[i]) hovered=1;
+				var x=24;
+				var s=1;
+				var pic='';
+				var frame=0;
+				if (hovered) {s=1;x=24;}
+				if (selected) {s=1;x=48;}
+				
+				if (Game.specialTabs[i]=='santa') {pic='santa.png';frame=Game.santaLevel;}
+				else if (Game.specialTabs[i]=='dragon') {pic='dragon.png?v='+Game.version;frame=Game.dragonLevels[Game.dragonLevel].pic;}
+				else if (Game.specialTabs[i]=='sundae') {pics='/../cat.png', frame=0;}
+				else {pic='dragon.png?v='+Game.version;frame=4;}
+				
+				if (hovered || selected)
+				{
+					var ss=s*64;
+					var r=Math.floor((Game.T*0.5)%360);
+					Game.LeftBackground.save();
+					Game.LeftBackground.translate(x,y);
+					if (Game.prefs.fancy) Game.LeftBackground.rotate((r/360)*Math.PI*2);
+					Game.LeftBackground.globalAlpha=0.75;
+					Game.LeftBackground.drawImage(Pic('shine.png'),-ss/2,-ss/2,ss,ss);
+					Game.LeftBackground.restore();
+				}
+				
+				if (Game.prefs.fancy) Game.LeftBackground.drawImage(Pic(pic),96*frame,0,96,96,(x+(selected?0:Math.sin(Game.T*0.2+tabI)*3)-24*s),(y-(selected?6:Math.abs(Math.cos(Game.T*0.2+tabI))*6)-24*s),48*s,48*s);
+				else Game.LeftBackground.drawImage(Pic(pic),96*frame,0,96,96,(x-24*s),(y-24*s),48*s,48*s);
+				
+				tabI++;
+				y+=48;
+			}
+			
+		}
+	},
+
 	registerBuffs: () => {
 		if(Game.buffTypesByName.streaming) {
 			return;
@@ -170,6 +300,14 @@ AkaMod = {
 		});
 	},
 
+	//redefine the Upgrade constructor. The localization thing is causing bugs for me.
+	Upgrade: (name,desc,price,icon,buyFunction) => {
+		const upgrd = new Game.Upgrade(name,desc,price,icon,buyFunction);
+		AkaMod.upgrades.push(upgrd);
+		upgrd.dname = upgrd.name;
+		upgrd.ddesc = upgrd.desc;
+	},
+
 	//register all upgrades
 	loadedUpgradeString: undefined,
 	registerUpgrades: () => {
@@ -178,14 +316,18 @@ AkaMod = {
 		}
 		//Game.Upgrade=function(name,desc,price,icon,buyFunction)
 		Game.order = 1000;
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A Fan","Double bonus from watching live streams!<q>How's this twitch thing work?</q>",cnum(400,'m'),[19,3], AkaMod.refreshStreamingBuff));
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A Big Fan","Another double bonus from watching live streams!<q>So I press this button to stream...</q>",cnum(400,'b'),[20,3], AkaMod.refreshStreamingBuff));
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A Super Fan","Another double bonus from watching live streams!<q>And I can chat right here...</q>",cnum(400,'t'),[21,3], AkaMod.refreshStreamingBuff));
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A MEGA Fan","Another double bonus from watching live streams!<q>And the streamer video goes here...</q>",cnum(400,'qa'),[19,4], AkaMod.refreshStreamingBuff));
-		AkaMod.upgrades.push(new Game.Upgrade("I'm A RIDICULOUS Fan","Another double bonus from watching live streams!<q>Oh, that's how it works.</q>",cnum(400,'qi'),[20,4], AkaMod.refreshStreamingBuff));
+		new AkaMod.Upgrade("I'm A Fan","Double bonus from watching live streams!<q>How's this twitch thing work?</q>",cnum(400,'m'),[19,3], AkaMod.refreshStreamingBuff);
+		new AkaMod.Upgrade("I'm A Big Fan","Another double bonus from watching live streams!<q>So I press this button to stream...</q>",cnum(400,'b'),[20,3], AkaMod.refreshStreamingBuff);
+		new AkaMod.Upgrade("I'm A Super Fan","Another double bonus from watching live streams!<q>And I can chat right here...</q>",cnum(400,'t'),[21,3], AkaMod.refreshStreamingBuff);
+		new AkaMod.Upgrade("I'm A MEGA Fan","Another double bonus from watching live streams!<q>And the streamer video goes here...</q>",cnum(400,'qa'),[19,4], AkaMod.refreshStreamingBuff);
+		new AkaMod.Upgrade("I'm A RIDICULOUS Fan","Another double bonus from watching live streams!<q>Oh, that's how it works.</q>",cnum(400,'qi'),[20,4], AkaMod.refreshStreamingBuff);
+
+		//Sundae!
+		new Game.Upgrade("Sundae!","Unlocks Sundae!<q>It's a KITTY KAT</q>",cnum(9,'b'),[18,0]);
+
 		AkaMod.loadUpgrades();
 	},
-	loadUpgrades: () => {
+	loadUpgrades: () => { //loads upgrades from save data.
 		if(AkaMod.loadedUpgradeString === undefined || AkaMod.upgrades.length === 0) {
 			return;
 		}
@@ -194,7 +336,20 @@ AkaMod = {
 			var u = upgradeData[i];
 			AkaMod.upgrades[i].unlocked = parseInt(u.charAt(0));
 			AkaMod.upgrades[i].bought = parseInt(u.charAt(2));
+			if(isNaN(AkaMod.upgrades[i].unlocked)) { //I don't think this should happen anymore, but I want to monitor just in case.
+				console.error("Failed to load upgrade " + i + " data:" + u);
+				AkaMod.upgrades[i].unlocked = 0;
+				AkaMod.upgrades[i].bought = 0;
+			}
 		}
+	},
+
+	//redefine the Achievement constructor. The localization thing is causing bugs for me.
+	Achievement: (name,desc,icon) => {
+		const ach = new Game.Achievement(name,desc,icon);
+		AkaMod.achievements.push(ach);
+		ach.dname = ach.name;
+		ach.ddesc = ach.desc;
 	},
 
 	//register all achievements.
@@ -205,14 +360,14 @@ AkaMod = {
 		}
 		//Game.Achievement=function(name,desc,icon)
 		//streamer achievements
-		AkaMod.achievements.push(new Game.Achievement("Streamerman", "Catch a live stream!", [16,5]));
-		AkaMod.achievements.push(new Game.Achievement("It's a classic!", "Mike is playing Trials or Oxygen Not Included", [8,0]));
-		AkaMod.achievements.push(new Game.Achievement("No, you're a Fony", "Rename your bakery to akamikeb", [28,7]));
-		AkaMod.achievements.push(new Game.Achievement("Happy Birthday Mike!", "Play on Mike's Birthday!", [22,13]));
+		new AkaMod.Achievement("Streamerman", "Catch a live stream!", [16,5]);
+		new AkaMod.Achievement("It's a classic!", "Mike is playing Trials or Oxygen Not Included", [8,0]);
+		new AkaMod.Achievement("No, you're a Fony", "Rename your bakery to akamikeb", [28,7]);
+		new AkaMod.Achievement("Happy Birthday Mike!", "Play on Mike's Birthday!", [22,13]);
 
 		AkaMod.loadAchievements();
 	},
-	loadAchievements: () => {
+	loadAchievements: () => { //loads achievements from save data.
 		if(AkaMod.loadedAchievementString === undefined || AkaMod.achievements.length === 0) {
 			return;
 		}
@@ -255,7 +410,9 @@ AkaMod = {
 		return str;
 	},
 
+	//Load save data.
 	load:function(str) {
+		//Loading is janky due to supporting both the steam app and website. Loading stuf happens in a different order.
 		if(Game.UpgradesN > 1) {
 			//If we are running on the webapp, we need to register our data before doing the load.
 			//On the webapp, create is already called.
