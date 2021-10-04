@@ -3,6 +3,9 @@ A Cookie Clicker mod for fans of AkaMikeB!
 
 
 ## Features
+<b>V2.1</b>
+* Mod now auto-updates! Meaning you get all new features and bug fix goodness without any more manual downloads.
+
 <b>V2 - Kitty-clysm</b>
 * Sundae is unlockable!
 * Pet Sundae for cookies rewards!

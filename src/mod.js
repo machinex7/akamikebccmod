@@ -256,6 +256,7 @@ AkaMod = {
 		}
 	},
 
+	//Holds all the sundae feature content.
 	initSundaeStuff: () => {
 		Game.UpdateSpecial=function() {
 			Game.specialTabs=[];
