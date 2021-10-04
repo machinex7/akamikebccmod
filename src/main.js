@@ -540,6 +540,7 @@ AkaMod = {
 		upgrd.dname = upgrd.name;
 		upgrd.ddesc = upgrd.desc;
 	},
+
 	//register all upgrades
 	loadedUpgradeString: undefined,
 	registerUpgrades: () => {
@@ -547,7 +548,6 @@ AkaMod = {
 			return; //don't load twice
 		}
 		//Game.Upgrade=function(name,desc,price,icon,buyFunction)
-		Game.order = 1000;
 		AkaMod.Upgrade("I'm A Fan","Double bonus from watching live streams!<q>How's this twitch thing work?</q>",cnum(400,'m'),[19,3], AkaMod.refreshStreamingBuff);
 		AkaMod.Upgrade("I'm A Big Fan","Another double bonus from watching live streams!<q>So I press this button to stream...</q>",cnum(400,'b'),[20,3], AkaMod.refreshStreamingBuff);
 		AkaMod.Upgrade("I'm A Super Fan","Another double bonus from watching live streams!<q>And I can chat right here...</q>",cnum(400,'t'),[21,3], AkaMod.refreshStreamingBuff);
