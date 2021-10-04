@@ -11,6 +11,7 @@ A Cookie Clicker mod for fans of AkaMikeB!
 * Sundae and Streaming stats are now available on the Stats page.
 * 3 New MikeB streaming achievements.
 * Custom tickers
+
 <b>V1</b>
 * Clicking buff when Mike is streaming on <a href="https://www.twitch.tv/akamikeb">Twitch</a>!.
 * CPS Buff when Mike is streaming. Increases for each viewer!
