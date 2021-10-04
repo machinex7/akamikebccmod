@@ -111,7 +111,7 @@ AkaMod = {
 			list.push('After years of having his name mispronounced, popular streamer says, "My name is Mike now. Just Mike. Can you get that one right?"');
 			list.push("News: No more models on OnlyFans. Now it's just pictures of cookies.");
 			if(AkaMod.streamData.mikeStreaming) {
-				list.push("<a href='https://www.twitch.tv/akamikeb'>Mike is Streaming! Click Here!</a>"); //TODO test this on the steam version.
+				list.push("<a href='https://www.twitch.tv/akamikeb' target='_blank'>Mike is Streaming! Click Here!</a>"); //TODO test this on the steam version.
 			}
 
 			if(Game.Has("Sundae!")) {
@@ -176,11 +176,13 @@ AkaMod = {
 				} else {
 					newSection += "<div class='listing'><b>Hours Watched: </b>" + (Math.round(AkaMod.streamData.minutesWatched/600)/10) + "</div>";
 				}
-				newSection += "<div class='listing'><b>Sundae Pets(This run): </b>" + AkaMod.sundaeData.pets + "</div>";
-				newSection += "<div class='listing'><b>Sundae Pets(All-time): </b>" + AkaMod.sundaeData.totalPets + "</div>";
-				newSection += "<div class='listing'><b>Sundae Scratches: </b>" + AkaMod.sundaeData.totalScratches + "</div>";
-				newSection += "<div class='listing'><b>Pets in a Row: </b>" + AkaMod.sundaeData.consecutivePets + "</div>";
-				newSection += "<div class='listing'><b>Cookies Gained From Petting: </b><div class=\"price plain\">"+Game.tinyCookie() + Beautify(AkaMod.sundaeData.cookiesEarned) + "</div></div>";
+				if(Game.Has("Sundae!")) {
+					newSection += "<div class='listing'><b>Sundae Pets(This run): </b>" + AkaMod.sundaeData.pets + "</div>";
+					newSection += "<div class='listing'><b>Sundae Pets(All-time): </b>" + AkaMod.sundaeData.totalPets + "</div>";
+					newSection += "<div class='listing'><b>Sundae Scratches: </b>" + AkaMod.sundaeData.totalScratches + "</div>";
+					newSection += "<div class='listing'><b>Pets in a Row: </b>" + AkaMod.sundaeData.consecutivePets + "</div>";
+					newSection += "<div class='listing'><b>Cookies Gained From Petting: </b><div class=\"price plain\">"+Game.tinyCookie() + Beautify(AkaMod.sundaeData.cookiesEarned) + "</div></div>";
+					}
 				newSection += "</div>";
 
 				const menu = l('menu');
@@ -320,7 +322,7 @@ AkaMod = {
 					Game.lastClickedSpecialPic=Date.now();
 					if (Game.prefs.particles) {
 						Game.particleAdd(Game.mouseX,Game.mouseY-32,Math.random()*4-2,Math.random()*-2-4,Math.random()*0.2+0.5,1,2,[20,3]);
-						Game.particleAdd(Game.mouseX+Math.random()*8-4,Game.mouseY-40,0,-2,1,4,2,'','+'+Beautify(gain,1));
+						Game.particleAdd(Game.mouseX+Math.random()*8+60,Game.mouseY-40,0,-2,1,4,2,'','+'+Beautify(gain,1));
 					}
 
 					//unlocks and achievements.
@@ -384,7 +386,7 @@ AkaMod = {
 					PlaySound('snd/growl.mp3',1);
 					if (Game.prefs.particles) {
 						Game.particleAdd(Game.mouseX,Game.mouseY-32,Math.random()*4-2,Math.random()*-2-4,Math.random()*0.2+0.5,1,2,[0,8]);
-						Game.particleAdd(Game.mouseX+Math.random()*8-4,Game.mouseY-40,0,-2,1,4,2,'','-'+Beautify(loss,1));
+						Game.particleAdd(Game.mouseX+Math.random()*8+60,Game.mouseY-40,0,-2,1,4,2,'','-'+Beautify(loss,1));
 					}
 					if(AkaMod.sundaeData.mood < 2) {Game.gainBuff('scratch',4);}
 					else if(AkaMod.sundaeData.mood < 10) {Game.gainBuff('scratch',2);}
