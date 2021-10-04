@@ -478,7 +478,7 @@ AkaMod = {
 				
 				if (Game.specialTabs[i]=='santa') {pic='santa.png';frame=Game.santaLevel;}
 				else if (Game.specialTabs[i]=='dragon') {pic='dragon.png?v='+Game.version;frame=Game.dragonLevels[Game.dragonLevel].pic;}
-				else if (Game.specialTabs[i]=='sundae') {pic="https://machinex7.github.io/akamikebccmod/img/cat.png", frame=0;}
+				else if (Game.specialTabs[i]=='sundae') {pic="https://machinex7.github.io/akamikebccmod/img/bigcat.png", frame=0;}
 				else {pic='dragon.png?v='+Game.version;frame=4;}
 				
 				if (hovered || selected)
