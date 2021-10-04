@@ -3,6 +3,14 @@ A Cookie Clicker mod for fans of AkaMikeB!
 
 
 ## Features
+<b>V2 - Kitty-clysm</b>
+* Sundae is unlockable!
+* Pet Sundae for cookies rewards!
+* Avoid getting scratched!
+* 13 Sundae-related Upgrades and 9 Sundae-related Achievements.
+* Sundae and Streaming stats are now available on the Stats page.
+* 3 New MikeB streaming achievements.
+* Custom tickers
 <b>V1</b>
 * Clicking buff when Mike is streaming on <a href="https://www.twitch.tv/akamikeb">Twitch</a>!.
 * CPS Buff when Mike is streaming. Increases for each viewer!

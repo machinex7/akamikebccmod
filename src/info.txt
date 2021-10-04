@@ -3,7 +3,7 @@
 	"ID": "akamikeb",
 	"Author": "MachineX7",
 	"Description": "A mod themed around AkaMikeB, giving boosts while he's streaming.",
-	"ModVersion": 1.1,
+	"ModVersion": 2,
 	"GameVersion": 2.031,
 	"Date": "13/08/2021",
 	"Dependencies": [],
