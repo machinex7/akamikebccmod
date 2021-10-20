@@ -3,6 +3,11 @@ A Cookie Clicker mod for fans of AkaMikeB!
 
 
 ## Features
+<b>V2.2</b>
+* Major rebalance for Sundae. You can pet her more frequently, but for fewer cookies. Also dropped the price on several upgrades. Endgame Sundae may still be too OP though.
+* Added achievements requested by @topeveryday1.
+* Added some secret Sundae gifts. No checking the source code!
+
 <b>V2.1</b>
 * Mod now auto-updates! Meaning you get all new features and bug fix goodness without any more manual downloads.
 

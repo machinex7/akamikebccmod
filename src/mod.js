@@ -1,4 +1,5 @@
 //A mod by @MachineX7 for @AkaMikeB.
+//SPOILERS! May be more fun to discover stuff as you go.
 
 //utility functions.
 var cnum=function(base, factor){
@@ -28,6 +29,8 @@ var cnum=function(base, factor){
 		fct = 1000000000000000000000000000000000;
 	} else if(factor == 'ud'){ //undecillion
 		fct = 1000000000000000000000000000000000000;
+	}  else if(factor == 'dd'){ //duodecillion
+		fct = 1000000000000000000000000000000000000000;
 	}
 	
 	return base * fct;
@@ -77,11 +80,11 @@ AkaMod = {
 		consecutiveScratches: 0,
 		mood: 100,
 		maxMood: 80,
-		moodReduction: 5,
+		moodReduction: 2,
 		moodRecovery: 1,
 		regainedMood: 0,
-		cookieGains: 8,
-		scratchLoss: 4,
+		cookieGains: 3,
+		scratchLoss: 3,
 		cookiesEarned: 0
 	},
 
@@ -151,11 +154,11 @@ AkaMod = {
 				consecutiveScratches: 0,
 				mood: 100,
 				maxMood: 80,
-				moodReduction: 5,
+				moodReduction: 2,
 				moodRecovery: 1,
 				regainedMood: 0,
-				cookieGains: 8,
-				scratchLoss: 4,
+				cookieGains: 3,
+				scratchLoss: 3,
 				cookiesEarned: 0
 			};
 		});
@@ -174,7 +177,7 @@ AkaMod = {
 				if(AkaMod.streamData.minutesWatched < 120) {
 					newSection += "<div class='listing'><b>Minutes Watched: </b>" + AkaMod.streamData.minutesWatched + "</div>";
 				} else {
-					newSection += "<div class='listing'><b>Hours Watched: </b>" + (Math.round(AkaMod.streamData.minutesWatched/600)/10) + "</div>";
+					newSection += "<div class='listing'><b>Hours Watched: </b>" + (Math.round(AkaMod.streamData.minutesWatched/6)/10) + "</div>";
 				}
 				if(Game.Has("Sundae!")) {
 					newSection += "<div class='listing'><b>Sundae Pets(This run): </b>" + AkaMod.sundaeData.pets + "</div>";
@@ -206,12 +209,15 @@ AkaMod = {
 
 		if(Game.Has("Sundae!")) {
 			if(AkaMod.sundaeData.mood < AkaMod.sundaeData.maxMood) {
-				const moremood = 5 * AkaMod.sundaeData.moodRecovery / Game.fps;
+				let moremood = 5 * AkaMod.SundaeMoodRecovery() / Game.fps;
 				AkaMod.sundaeData.mood += moremood;
+				if(AkaMod.sundaeData.mood > AkaMod.sundaeData.maxMood) {
+					AkaMod.sundaeData.mood = AkaMod.sundaeData.maxMood;
+				}
 				AkaMod.sundaeData.regainedMood += moremood;
-				if(AkaMod.sundaeData.regainedMood > 4*60) { //4 hours
+				if(AkaMod.sundaeData.regainedMood > 4*60) { //4 hours at 1/min
 					Game.Unlock("Cat Toy");
-					if(AkaMod.sundaeData.regainedMood > 12*60) { //another 6 hours
+					if(AkaMod.sundaeData.regainedMood > 12*60) { //another 6 hours at 2/min
 						Game.Unlock("Cat Food");
 					}
 				}
@@ -296,8 +302,29 @@ AkaMod = {
 				}
 			}
 		};
+		AkaMod.SundaeMoodRecovery=()=>{
+			let moremood = AkaMod.sundaeData.moodRecovery;
+			if(Game.Has("Sundae's Gift")){
+				if(Game.hasBuff("Frenzy")) {
+					moremood *= 4;
+				} else if(Game.hasBuff("Dragon Harvest")) {
+					moremood *= 8;
+				} else if(Game.hasBuff("Clot")) {
+					moremood *= 2;
+				}
+			}
+			return moremood;
+		}
 
 		//Handles petting Sundae.
+		AkaMod.SundaePetGains = () => {
+			let gain = Game.computedMouseCps * AkaMod.sundaeData.cookieGains * (1 + AkaMod.sundaeData.consecutivePets/10);
+			if(AkaMod.streamData.mikeStreaming && Game.Has("Sundae's Super Secret Gift")) {
+				const boost = streamingBuff * AkaMod.streamData.viewerCount / 200;
+				gain *= 1 + boost;
+			}
+			return gain;
+		};
 		AkaMod.ClickSpecialPic = Game.ClickSpecialPic;
 		Game.ClickSpecialPic=function() {
 			if (Game.specialTab==='sundae'){
@@ -315,7 +342,7 @@ AkaMod = {
 						Game.Win("Risky Moves");
 					}
 					AkaMod.sundaeData.mood -= AkaMod.sundaeData.moodReduction;
-					let gain = Game.computedMouseCps * AkaMod.sundaeData.cookieGains;
+					let gain = AkaMod.SundaePetGains();
 					Game.Earn(gain);
 					AkaMod.sundaeData.cookiesEarned += gain;
 					
@@ -323,52 +350,68 @@ AkaMod = {
 					Game.lastClickedSpecialPic=Date.now();
 					if (Game.prefs.particles) {
 						Game.particleAdd(Game.mouseX,Game.mouseY-32,Math.random()*4-2,Math.random()*-2-4,Math.random()*0.2+0.5,1,2,[20,3]);
-						Game.particleAdd(Game.mouseX+Math.random()*8+60,Game.mouseY-40,0,-2,1,4,2,'','+'+Beautify(gain,1));
+						Game.particleAdd(Game.mouseX+Math.random()*8+100,Game.mouseY-40,0,-2,1,4,2,'','+'+Beautify(gain,1));
 					}
 
 					//unlocks and achievements.
-					if(AkaMod.sundaeData.pets >= 20) {
+					if(AkaMod.sundaeData.pets >= 40) {
 						Game.Unlock("Good Kitty");
-						if(AkaMod.sundaeData.pets >= 50) {
+						if(AkaMod.sundaeData.pets >= 100) {
 							Game.Unlock("Very Good Kitty");
-							if(AkaMod.sundaeData.pets >= 200) {
+							if(AkaMod.sundaeData.pets >= 400) {
 								Game.Unlock("Very Very Good Kitty");
-								if(AkaMod.sundaeData.pets >= 1000) {
-									Game.Unlock("The Best Kitty");
+								if(AkaMod.sundaeData.pets >= 420) {
+									Game.Win("Tokin Sundae");
+									if(AkaMod.sundaeData.pets >= 2000) {
+										Game.Unlock("The Best Kitty");
+									}
 								}
 							}
 						}
 					}
-					if(AkaMod.sundaeData.consecutivePets >= 8) {
+					if(AkaMod.sundaeData.consecutivePets >= 10) {
 						Game.Unlock("Content Kitty");
-						if(AkaMod.sundaeData.consecutivePets >= 10) {
+						if(AkaMod.sundaeData.consecutivePets >= 13) {
 							Game.Unlock("Happy Kitty");
-							if(AkaMod.sundaeData.consecutivePets >= 12) {
+							if(AkaMod.sundaeData.consecutivePets >= 16) {
 								Game.Unlock("Happier Kitty");
-								if(AkaMod.sundaeData.consecutivePets >= 14) {
+								if(AkaMod.sundaeData.consecutivePets >= 20) {
 									Game.Unlock("Happiest Kitty");
 									Game.Win("She Likes You!");
+									if(Game.Has("Happiest Kitty") && Game.Has("Sundae's Gift")) {
+										Game.Unlock("Sundae's Secret Gift");
+									}
 								}
 							}
 						}
 					}
 
 					Game.Win("Pet Owner");
-					if(AkaMod.sundaeData.totalPets > 100) {
+					if(AkaMod.sundaeData.totalPets > 200) {
 						Game.Win("Pet Petter");
-						if(AkaMod.sundaeData.totalPets > 1000) {
+						if(AkaMod.sundaeData.totalPets > 2000) {
 							Game.Win("Petting Pet Petter");
-							if(AkaMod.sundaeData.totalPets > 10000) {
+							if(AkaMod.sundaeData.totalPets > 20000) {
 								Game.Win("Petting Pet Petter Who Pets Pets");
 							}
 						}
 					}
 
+					if(Math.random() < 0.01) { //1% chance
+						Game.Unlock("Sundae's Gift");
+						if(AkaMod.streamData.mikeStreaming && Game.Has("Sundae's Secret Gift")) {
+							Game.Unlock("Sundae's Super Secret Gift");
+						}
+					}
+
 				} else {
 					//scratch!
-					let loss = Game.computedMouseCps * AkaMod.sundaeData.scratchLoss;
+					let loss = Game.computedMouseCps * AkaMod.sundaeData.scratchLoss * (1 + AkaMod.sundaeData.consecutiveScratches/5);
 					if(AkaMod.sundaeData.mood < 2) {loss *= 4;}
 					else if(AkaMod.sundaeData.mood < 10) {loss *= 2;}
+					if(Game.cookies < loss) {
+						loss = Game.cookies;
+					}
 					if(!Game.Has('Sadistic')) {
 						AkaMod.sundaeData.mood -= AkaMod.sundaeData.moodReduction;
 						AkaMod.sundaeData.mood = Math.max(AkaMod.sundaeData.mood, 0);
@@ -387,7 +430,7 @@ AkaMod = {
 					PlaySound('snd/growl.mp3',1);
 					if (Game.prefs.particles) {
 						Game.particleAdd(Game.mouseX,Game.mouseY-32,Math.random()*4-2,Math.random()*-2-4,Math.random()*0.2+0.5,1,2,[0,8]);
-						Game.particleAdd(Game.mouseX+Math.random()*8+60,Game.mouseY-40,0,-2,1,4,2,'','-'+Beautify(loss,1));
+						Game.particleAdd(Game.mouseX+Math.random()*8+100,Game.mouseY-40,0,-2,1,4,2,'','-'+Beautify(loss,1));
 					}
 					if(AkaMod.sundaeData.mood < 2) {Game.gainBuff('scratch',4);}
 					else if(AkaMod.sundaeData.mood < 10) {Game.gainBuff('scratch',2);}
@@ -399,11 +442,14 @@ AkaMod = {
 						if(AkaMod.sundaeData.totalScratches >= 200) {
 							Game.Unlock('Sadistic');
 							Game.Win("Sundae Bloody Sundae");
+							if(AkaMod.sundaeData.totalScratches >= 420) {
+								Game.Win("Smokin Sundae");
+							}
 						}
 					}
 				}
 				Game.ToggleSpecialMenu(true); //refresh
-				//l('innerMood').style.width=(348*(AkaMod.sundaeData.mood/100))+'px';
+				
 			} else {
 				AkaMod.ClickSpecialPic();
 			}
@@ -429,14 +475,14 @@ AkaMod = {
 					sundaeMood = "༼つಠ益ಠ༽つ  ─=≡ΣO))";
 				}
 				var icon=[29,14]; //for sugar lump
-				var str='<div id="specialPic" '+Game.clickStr+'="Game.ClickSpecialPic();" style="cursor:pointer;position:absolute;left:0px;top:0px;width:28px;height:28px;background-size:contain;background-repeat:no-repeat;background:url('+pic+');filter:drop-shadow(0px 3px 2px #000);-webkit-filter:drop-shadow(0px 3px 2px #000);"></div>';
+				var str='<div id="specialPic" '+ Game.getDynamicTooltip('AkaMod.sundaePetTooltip','this') +' '+Game.clickStr+'="Game.ClickSpecialPic();" style="cursor:pointer;position:absolute;left:0px;top:0px;width:28px;height:28px;background-size:contain;background-repeat:no-repeat;background:url('+pic+');filter:drop-shadow(0px 3px 2px #000);-webkit-filter:drop-shadow(0px 3px 2px #000);"></div>';
 				str+='<div class="close" onclick="PlaySound(\'snd/press.mp3\');Game.ToggleSpecialMenu(0);">x</div>';
 				str+='<div class="line"></div>'
 						+ '<div style="text-align:center;margin-bottom:4px;">'+sundaeMood+'</div>'
 						+ '<div '+Game.getDynamicTooltip('AkaMod.sundaeRefillTooltip','this')+' id="sundaeLumpRefill" class="usesIcon shadowFilter lumpRefill" style="left:-14px;top:18px;background-position:'+(-icon[0]*48)+'px '+(-icon[1]*48)+'px;"></div>'
 						+ '<div id="moodContainer" class="smallFramed meterContainer" style="height: 16px;margin-left:14px;">'
 							+ '<div id="innerMood" class="meter filling" style="width: ' + (334*(AkaMod.sundaeData.mood/100)) + 'px; transform: scale(1,2); height: 50%; transform-origin: 50% 0;"></div>'
-							+ '<div class="titleFont" style="width: 100%; text-align: center; margin-top: 1px; position: absolute; transform: scale(1,0.8); color: white;">' + Math.round(AkaMod.sundaeData.mood) + '/' + AkaMod.sundaeData.maxMood + ' (+' + AkaMod.sundaeData.moodRecovery + '/minute)</div>'
+							+ '<div class="titleFont" style="width: 100%; text-align: center; margin-top: 1px; position: absolute; transform: scale(1,0.8); color: white;">' + Math.round(AkaMod.sundaeData.mood) + '/' + AkaMod.sundaeData.maxMood + ' (+' + AkaMod.SundaeMoodRecovery() + '/minute)</div>'
 						+ '</div>';
 				l('specialPopup').innerHTML=str;
 				l('specialPopup').className='framed prompt onScreen';
@@ -446,11 +492,15 @@ AkaMod = {
 						AkaMod.sundaeData.mood = AkaMod.sundaeData.maxMood;
 						Game.Win("Nothing But The Best For My Kitty");
 						PlaySound('snd/pop'+Math.floor(Math.random()*3+1)+'.mp3',0.75);
+						Game.gainBuff('purr',60); //1 minute 4x boost to clicks
 					});}
 				});
 			} else {
 				AkaMod.ToggleSpecialMenu(on);
 			}
+		};
+		AkaMod.sundaePetTooltip=function(){
+			return '<div style="width:300px;padding:8px;">Sundae Pets Yield '+Game.tinyCookie()+'<b>'+ Beautify(AkaMod.SundaePetGains()) +'.</b><div class="line"></div>Sundae Scratches Cost '+Game.tinyCookie()+'<b>'+ Beautify(Game.computedMouseCps * AkaMod.sundaeData.scratchLoss) + '.</div>';
 		};
 		AkaMod.sundaeRefillTooltip = function() {
 			return '<div style="padding:8px;width:300px;font-size:11px;text-align:center;">Click to completely restore Sundae\'s Mood for <span class="price lump">1 Sugar Lump</span>.'
@@ -530,8 +580,19 @@ AkaMod = {
 				icon:[18,17],
 				time:time*Game.fps,
 				add:true,
-				multCpS:0.5,
+				multCpS:0.75,
 				aura:2
+			};
+		});
+		new Game.buffType('purr',function(time){
+			return {
+				name:'Purring',
+				desc:'Sundae enjoyed her treat! Clicks boosted.',
+				icon:[18,13],
+				time:time*Game.fps,
+				add:true,
+				multClick:4,
+				aura:0
 			};
 		});
 	},
@@ -559,18 +620,21 @@ AkaMod = {
 
 		//Sundae!
 		AkaMod.Upgrade("Sundae!","Unlocks Sundae!<q>It's a KITTY KAT</q>",999999999000,[18,0]);
-		AkaMod.Upgrade("Good Kitty","Pets give twice as many cookies!",999999999000000000,[18,1], () => {AkaMod.sundaeData.cookieGains *= 2});
-		AkaMod.Upgrade("Very Good Kitty","Pets give twice as many cookies!",999999999000000000000,[18,2], () => {AkaMod.sundaeData.cookieGains *= 2});
-		AkaMod.Upgrade("Very Very Good Kitty","Pets give twice as many cookies!",999999999000000000000,[18,13], () => {AkaMod.sundaeData.cookieGains *= 2});
-		AkaMod.Upgrade("The Beest Kitty","Pets give twice as many cookies!",999999999000000000000,[18,14], () => {AkaMod.sundaeData.cookieGains *= 2});
-		AkaMod.Upgrade("Filed Claws","Lose fewer cookies per scratch.<q>It still hurts, but not as bad.</q>",cnum(999,'qi'),[28,6], () => {AkaMod.sundaeData.scratchLoss--});
+		AkaMod.Upgrade("Good Kitty","Pets give twice as many cookies!",99999999900000,[18,1], () => {AkaMod.sundaeData.cookieGains *= 2});
+		AkaMod.Upgrade("Very Good Kitty","Pets give twice as many cookies!",9999999990000000,[18,2], () => {AkaMod.sundaeData.cookieGains *= 2});
+		AkaMod.Upgrade("Very Very Good Kitty","Pets give twice as many cookies!",999999999000000000,[18,13], () => {AkaMod.sundaeData.cookieGains *= 2});
+		AkaMod.Upgrade("The Best Kitty","Pets give 4 times as many cookies!",99999999900000000000,[18,14], () => {AkaMod.sundaeData.cookieGains *= 4});
+		AkaMod.Upgrade("Filed Claws","Lose fewer cookies per scratch.<q>It still hurts, but not as bad.</q>",cnum(999,'qa'),[28,6], () => {AkaMod.sundaeData.scratchLoss=3});
 		AkaMod.Upgrade("Sadistic","Sundae no longer loses contentment when she scratches you.<q>Is she... smiling?</q>",cnum(999,'qa'),[28,6]);
-		AkaMod.Upgrade("Content Kitty","Max Contentment increases to 85%.",cnum(999,'qi'),[18,13], () => {AkaMod.sundaeData.maxMood += 5;});
-		AkaMod.Upgrade("Happy Kitty","Max Contentment increases to 90%.",cnum(9.99,'qa'),[18,14], () => {AkaMod.sundaeData.maxMood += 5;});
-		AkaMod.Upgrade("Happier Kitty","Max Contentment increases to 95%.",cnum(99.9,'qa'),[18,18], () => {AkaMod.sundaeData.maxMood += 5;});
-		AkaMod.Upgrade("Happiest Kitty","Max Contentment increases to 100%.",cnum(999,'qa'),[18,19], () => {AkaMod.sundaeData.maxMood += 5;});
-		AkaMod.Upgrade("Cat Toy","Sundae's mood recovers faster.",cnum(999,'qi'),[31,15], () => {AkaMod.sundaeData.moodRecovery++;});
-		AkaMod.Upgrade("Cat Food","Sundae's mood recovers even faster.",cnum(9.99,'sx'),[33,3], () => {AkaMod.sundaeData.moodRecovery++;});
+		AkaMod.Upgrade("Content Kitty","Max Contentment increases to 85%.",cnum(99.9,'qi'),[18,13], () => {AkaMod.sundaeData.maxMood += 5;});
+		AkaMod.Upgrade("Happy Kitty","Max Contentment increases to 90%.",cnum(.999,'qa'),[18,14], () => {AkaMod.sundaeData.maxMood += 5;});
+		AkaMod.Upgrade("Happier Kitty","Max Contentment increases to 95%.",cnum(9.99,'qa'),[18,18], () => {AkaMod.sundaeData.maxMood += 5;});
+		AkaMod.Upgrade("Happiest Kitty","Max Contentment increases to 100%.",cnum(99.9,'qa'),[18,19], () => {AkaMod.sundaeData.maxMood += 5;});
+		AkaMod.Upgrade("Cat Toy","Sundae's mood recovers faster.",cnum(99.9,'qi'),[31,15], () => {AkaMod.sundaeData.moodRecovery++;});
+		AkaMod.Upgrade("Cat Food","Sundae's mood recovers even faster.",cnum(.999,'sx'),[33,3], () => {AkaMod.sundaeData.moodRecovery++;});
+		AkaMod.Upgrade("Sundae's Gift","Sundae has a rare chance to offer you this strange gift...",cnum(999,'qi'),[16,9]);
+		AkaMod.Upgrade("Sundae's Secret Gift","Increases Sundae's max mood based on your prestige level.",cnum(999,'qi'),[16,9], () => {AkaMod.sundaeData.maxMood += Math.round(Math.log(Game.prestige)) + 1;});
+		AkaMod.Upgrade("Sundae's Super Secret Gift","Increases Sundae pet bonuses based on your akamikeb fan level.",cnum(999,'sx'),[16,9], () => {Game.Win("Sundae's Presents");});
 
 		AkaMod.loadUpgrades();
 	},
@@ -616,15 +680,17 @@ AkaMod = {
 
 		//Sundae!
 		AkaMod.Achievement("Pet Owner", "Pet Sundae!", [18,0]);
-		AkaMod.Achievement("Pet Petter", "Pet Sundae 100 Times", [18,1]);
-		AkaMod.Achievement("Petting Pet Petter", "Pet Sundae 1000 Times", [18,2]);
-		AkaMod.Achievement("Petting Pet Petter Who Pets Pets", "Pet Sundae 10000 Times", [18,13]);
-		AkaMod.Achievement("She Likes You!", "Pet Sundae 14 Times Without Getting Scratched", [18,14]);
+		AkaMod.Achievement("Pet Petter", "Pet Sundae 200 Times", [18,1]);
+		AkaMod.Achievement("Petting Pet Petter", "Pet Sundae 2000 Times", [18,2]);
+		AkaMod.Achievement("Petting Pet Petter Who Pets Pets", "Pet Sundae 20000 Times", [18,13]);
+		AkaMod.Achievement("She Likes You!", "Pet Sundae 50 Times Without Getting Scratched", [18,14]);
 		AkaMod.Achievement("Do You Even Like Cats?", "Hit 0% Contentment.", [29,6]);
-		AkaMod.Achievement("Sundae Bloody Sundae", "Get Scratched 100 Times", [11,8]);
+		AkaMod.Achievement("Sundae Bloody Sundae", "Get Scratched 200 Times", [11,8]);
 		AkaMod.Achievement("Risky Moves", "Pet Successfully With Less Than 10% Contentment", [1,7]);
 		AkaMod.Achievement("Nothing But The Best For My Kitty", "Spend a Sugar Lump on Sundae", [29,21]);
-		//<Master Pet Owner> Buy All Sundae Upgrades.
+		AkaMod.Achievement("Smokin Sundae", "Why Are Sundae's Eyes Red?", [18, 32]);
+		AkaMod.Achievement("Tokin Sundae", "Sundae's Eyes Are Very Red.", [18, 32]);
+		AkaMod.Achievement("Sundae's Presents", "Collected All Of Sundae's Gifts", [16, 9]);
 
 		AkaMod.loadAchievements();
 	},
