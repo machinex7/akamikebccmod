@@ -373,12 +373,12 @@ AkaMod = {
 						Game.Unlock("Content Kitty");
 						if(AkaMod.sundaeData.consecutivePets >= 13) {
 							Game.Unlock("Happy Kitty");
-							if(AkaMod.sundaeData.consecutivePets >= 16) {
+							if(AkaMod.sundaeData.consecutivePets >= 18) {
 								Game.Unlock("Happier Kitty");
-								if(AkaMod.sundaeData.consecutivePets >= 20) {
+								if(AkaMod.sundaeData.consecutivePets >= 25) {
 									Game.Unlock("Happiest Kitty");
 									Game.Win("She Likes You!");
-									if(Game.Has("Happiest Kitty") && Game.Has("Sundae's Gift")) {
+									if(AkaMod.sundaeData.consecutivePets >= 30 && Game.Has("Happiest Kitty") && Game.Has("Sundae's Gift")) {
 										Game.Unlock("Sundae's Secret Gift");
 									}
 								}
@@ -481,7 +481,7 @@ AkaMod = {
 						+ '<div style="text-align:center;margin-bottom:4px;">'+sundaeMood+'</div>'
 						+ '<div '+Game.getDynamicTooltip('AkaMod.sundaeRefillTooltip','this')+' id="sundaeLumpRefill" class="usesIcon shadowFilter lumpRefill" style="left:-14px;top:18px;background-position:'+(-icon[0]*48)+'px '+(-icon[1]*48)+'px;"></div>'
 						+ '<div id="moodContainer" class="smallFramed meterContainer" style="height: 16px;margin-left:14px;">'
-							+ '<div id="innerMood" class="meter filling" style="width: ' + (334*(AkaMod.sundaeData.mood/100)) + 'px; transform: scale(1,2); height: 50%; transform-origin: 50% 0;"></div>'
+							+ '<div id="innerMood" class="meter filling" style="width: ' + (334*(Math.min(AkaMod.sundaeData.mood,100)/100)) + 'px; transform: scale(1,2); height: 50%; transform-origin: 50% 0;"></div>'
 							+ '<div class="titleFont" style="width: 100%; text-align: center; margin-top: 1px; position: absolute; transform: scale(1,0.8); color: white;">' + Math.round(AkaMod.sundaeData.mood) + '/' + AkaMod.sundaeData.maxMood + ' (+' + AkaMod.SundaeMoodRecovery() + '/minute)</div>'
 						+ '</div>';
 				l('specialPopup').innerHTML=str;
@@ -633,7 +633,7 @@ AkaMod = {
 		AkaMod.Upgrade("Cat Toy","Sundae's mood recovers faster.",cnum(99.9,'qi'),[31,15], () => {AkaMod.sundaeData.moodRecovery++;});
 		AkaMod.Upgrade("Cat Food","Sundae's mood recovers even faster.",cnum(.999,'sx'),[33,3], () => {AkaMod.sundaeData.moodRecovery++;});
 		AkaMod.Upgrade("Sundae's Gift","Sundae has a rare chance to offer you this strange gift...",cnum(999,'qi'),[16,9]);
-		AkaMod.Upgrade("Sundae's Secret Gift","Increases Sundae's max mood based on your prestige level.",cnum(999,'qi'),[16,9], () => {AkaMod.sundaeData.maxMood += Math.round(Math.log(Game.prestige)) + 1;});
+		AkaMod.Upgrade("Sundae's Secret Gift","Increases Sundae's max mood based on your prestige level.",cnum(999,'qi'),[16,9], () => {AkaMod.sundaeData.maxMood += Math.round(Math.log(Game.prestige) / 2) + 1;});
 		AkaMod.Upgrade("Sundae's Super Secret Gift","Increases Sundae pet bonuses based on your akamikeb fan level.",cnum(999,'sx'),[16,9], () => {Game.Win("Sundae's Presents");});
 
 		AkaMod.loadUpgrades();
