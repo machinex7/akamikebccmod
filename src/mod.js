@@ -318,7 +318,7 @@ AkaMod = {
 
 		//Handles petting Sundae.
 		AkaMod.SundaePetGains = () => {
-			let gain = Game.computedMouseCps * AkaMod.sundaeData.cookieGains * Math.max((1 + AkaMod.sundaeData.consecutivePets/10), 8);
+			let gain = Game.computedMouseCps * AkaMod.sundaeData.cookieGains * Math.min((1 + AkaMod.sundaeData.consecutivePets/10), 8);
 			if(AkaMod.streamData.mikeStreaming && Game.Has("Sundae's Super Secret Gift")) {
 				const boost = AkaMod.computeStreamingBuff() * AkaMod.streamData.viewerCount / 200;
 				gain *= 1 + boost;
