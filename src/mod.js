@@ -306,9 +306,9 @@ AkaMod = {
 			let moremood = AkaMod.sundaeData.moodRecovery;
 			if(Game.Has("Sundae's Gift")){
 				if(Game.hasBuff("Frenzy")) {
-					moremood *= 4;
+					moremood *= 3;
 				} else if(Game.hasBuff("Dragon Harvest")) {
-					moremood *= 8;
+					moremood *= 4;
 				} else if(Game.hasBuff("Clot")) {
 					moremood *= 2;
 				}
@@ -318,9 +318,9 @@ AkaMod = {
 
 		//Handles petting Sundae.
 		AkaMod.SundaePetGains = () => {
-			let gain = Game.computedMouseCps * AkaMod.sundaeData.cookieGains * (1 + AkaMod.sundaeData.consecutivePets/10);
+			let gain = Game.computedMouseCps * AkaMod.sundaeData.cookieGains * Math.max((1 + AkaMod.sundaeData.consecutivePets/10), 8);
 			if(AkaMod.streamData.mikeStreaming && Game.Has("Sundae's Super Secret Gift")) {
-				const boost = streamingBuff * AkaMod.streamData.viewerCount / 200;
+				const boost = AkaMod.computeStreamingBuff() * AkaMod.streamData.viewerCount / 200;
 				gain *= 1 + boost;
 			}
 			return gain;
@@ -633,8 +633,9 @@ AkaMod = {
 		AkaMod.Upgrade("Cat Toy","Sundae's mood recovers faster.",cnum(99.9,'qi'),[31,15], () => {AkaMod.sundaeData.moodRecovery++;});
 		AkaMod.Upgrade("Cat Food","Sundae's mood recovers even faster.",cnum(.999,'sx'),[33,3], () => {AkaMod.sundaeData.moodRecovery++;});
 		AkaMod.Upgrade("Sundae's Gift","Sundae has a rare chance to offer you this strange gift...",cnum(999,'qi'),[16,9]);
-		AkaMod.Upgrade("Sundae's Secret Gift","Increases Sundae's max mood based on your prestige level.",cnum(999,'qi'),[16,9], () => {AkaMod.sundaeData.maxMood += Math.round(Math.log(Game.prestige) / 2) + 1;});
+		AkaMod.Upgrade("Sundae's Secret Gift","Increases Sundae's max mood based on your prestige level.",cnum(999,'qi'),[16,9], () => {AkaMod.sundaeData.maxMood += Math.round(Math.log10(Game.prestige)) + 1;});
 		AkaMod.Upgrade("Sundae's Super Secret Gift","Increases Sundae pet bonuses based on your akamikeb fan level.",cnum(999,'sx'),[16,9], () => {Game.Win("Sundae's Presents");});
+		//TODO add upgrades that increase the max petting bonus from consecutive pets. But they require a bunch of fast pets.
 
 		AkaMod.loadUpgrades();
 	},
