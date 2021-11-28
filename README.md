@@ -1,8 +1,22 @@
 # AkaMikeB CookieClicker Mod
 A Cookie Clicker mod for fans of AkaMikeB!
 
-
 ## Features
+<b>Watch AkaMikeB stream for upgrades, achievements, and CPS boost!</b>
+<b>Pet Mike's cat Sundae! A happy cat will reward you with cookies, an angry cat will take them away...</b>
+<b>Pulls the latest version of the mod whenever the app starts, so you always have the latest fixes and features!</b>
+<b>Unlock a journey down the 12 Days of Blizz Blues Christmas!</b>
+
+## Release Notes
+<b>V3</b>
+* Lots of new content inspired by the 12 Days of Blizz Blues! Collect all the Reindeer Cookies to start your journey...
+* Lots of new gameplay and suprises to discover as you progress through the 12 days!
+* 50+ New Upgrades! Read the descriptions carefully before buying them. Some of them have some strange effects.
+* 70+ New Achievements! I got tired of counting them.
+* Lots of news tickers!
+* Tons of Exclamation Points!
+* Minor nerf to endgame Sundae.
+
 <b>V2.2</b>
 * Major rebalance for Sundae. You can pet her more frequently, but for fewer cookies. Also dropped the price on several upgrades. Endgame Sundae may still be too OP though.
 * Added achievements requested by @topeveryday1.
@@ -39,6 +53,6 @@ Basically, you need to download the main.js file and info.txt file and put them 
 9. In the current version of Cookie Clicker, you may need to restart the app after enabling the mod.
 
 ### Web Version
-Much easier.
+Much easier, but it only works on the old HTTP version of cookie clicker, not the HTTPS version.
 1. Drag this <a href="javascript: Game.LoadMod('https://machinex7.github.io/akamikebccmod/src/main.js');">link</a> to your browser bookmark's bar.
 2. When you're on the cookie clicker website, click the button!
