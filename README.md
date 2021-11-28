@@ -2,10 +2,10 @@
 A Cookie Clicker mod for fans of AkaMikeB!
 
 ## Features
-<b>Watch AkaMikeB stream for upgrades, achievements, and CPS boost!</b>
-<b>Pet Mike's cat Sundae! A happy cat will reward you with cookies, an angry cat will take them away...</b>
-<b>Pulls the latest version of the mod whenever the app starts, so you always have the latest fixes and features!</b>
-<b>Unlock a journey down the 12 Days of Blizz Blues Christmas!</b>
+<b>Watch AkaMikeB stream for upgrades, achievements, and CPS boost!<br />
+Pet Mike's cat Sundae! A happy cat will reward you with cookies, an angry cat will take them away...<br />
+Pulls the latest version of the mod whenever the app starts, so you always have the latest fixes and features!<br />
+Unlock a journey down the 12 Days of Blizz Blues Christmas!</b>
 
 ## Release Notes
 <b>V3</b>
