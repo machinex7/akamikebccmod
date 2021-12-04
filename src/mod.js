@@ -254,11 +254,11 @@ AkaMod = {
 					list.push("Boss attacks don't actually hurt you, buy they greatly increase the cost of your abilities.");
 					list.push("You may only call upon a single Grandma to fight for you at a time. She does slightly more damage when you are unable to deal damage.");
 				}
-				if(AkaMod.blizzDays.pokemon.length >= 10 && AkaMod.blizzDays.pokemon.length < AkaMod.pokemonTypes.length) {
-					list.push("There are still " + (AkaMod.pokemonTypes.length - AkaMod.blizzDays.pokemon.length) + " creatures you have not caught.");
+				if(AkaMod.blizzDays.pokemon.length >= 10 && AkaMod.blizzDays.pokemon.length < AkaMod.pokemonTypes.length - 1) {
+					list.push("There are still at least " + (AkaMod.pokemonTypes.length - AkaMod.blizzDays.pokemon.length - 1) + " creatures you have not caught.");
 				}
 				if(AkaMod.blizzDays.caughtBunnies > 10) {
-					list.push("Eastern cottontail rabbits can have between one and seven litters each year, and they average three or four litters annually, Animal Diversity Web reports. Each litter can contain between one and 12 babies, with the average being five.");
+					list.push("Eastern cottontail rabbits can have between one and seven litters each year, and they average three or four litters annually. Each litter can contain between one and 12 babies, with the average being five.");
 				}
 			}
 
@@ -550,14 +550,15 @@ AkaMod = {
 								icon = pokemonType.forms[pokemon.form - 1].icon;
 								name = pokemonType.forms[pokemon.form - 1].name;
 							}
+							let onClick = "";
+							if(pokemon.index === 0 && pokemon.level === 99 && Game.HasAchiev("BlizzBlues: Bunny Fan")) {
+								onClick = ' onClick="new Game.shimmer(\'bbBunny\',{icon: 2, offset: 0});new Game.shimmer(\'bbBunny\',{icon: 1, offset: 1});"';
+								extraInfo += "<br />Click me!";
+							}
 							const toolTip = name + "<br />" + 
 								(pokemon.level === 99 ? "<span style=\\\'color: green\\\'>Max Level</span>" : "Level " + pokemon.level + " / 99" )
 								+ extraInfo;
 							const dynamicToolip = Game.getDynamicTooltip('(temp = function(){return\'<div style=\\\'width:200px;\\\'>' + toolTip + '</div>\'})','this');
-							let onClick = "";
-							if(pokemon.index === 0 && pokemon.level === 99 && Game.HasAchiev("BlizzBlues: Bunny Fan")) {
-								onClick = ' onClick="new Game.shimmer(\'bbBunny\',{icon: 2, offset: 0});new Game.shimmer(\'bbBunny\',{icon: 1, offset: 1});"';
-							}
 							newSection += '<div class="crate upgrade enabled" '
 								+ dynamicToolip + onClick
 								+' style="float:none;background-position:' + icon[0]*-48 + 'px ' + icon[1]*-48 + 'px;"></div>';
@@ -1822,7 +1823,7 @@ AkaMod = {
 			{name: "Voideater", secret:true, flavor: "The Eye sees all. It has seen the Void, and become the Void.", baseChance: -40, clickLimit: 10, clickBoost: 0.1, icon: [21,25]},
 			{name: "Hungerer", secret:true, flavor: "The Hungerer will swallow all. It's stomach is endless. It will never be sated.", baseChance: -40, clickLimit: 20, clickBoost: 0.1, icon: [21,32]},
 			{name: "Chimera", secret:true, flavor: "When the forces of dark and light clash, the Chimera arises from the ashes.", baseChance: -50, clickLimit: 12, clickBoost: 0.1, icon: [24,7]},
-			{name: "Missingno", secret:true, flavor: "ASDJKP@#_!^WERY:K", baseChance: -80, clickLimit: 40, clickBoost: 0.2, icon: [0,7], forms:[{name: "MissingNO", icon:[0,8]}, {name: "MissingNo", icon:[8,10]}, , {name: "MISSINGNO", icon:[17,5]}]},
+			{name: "Missingno", secret:true, flavor: "ASDJKP@#_!^WERY:K", baseChance: -150, clickLimit: 40, clickBoost: 0.2, icon: [0,7], forms:[{name: "MissingNO", icon:[0,8]}, {name: "MissingNo", icon:[8,10]}, {name: "MISSINGNO", icon:[17,5]}]},
 		]; //DON'T ADD MORE. It will break upgrades.
 		AkaMod.baitTypes=[
 			{name:"Toast Bait", desc:"Buy a bait that gives a 1% boost to help catch a Creature. Click the Big Cookie a bunch to get a creature to spawn!", icon:[27,10], chance:1, cost:1},
@@ -1856,13 +1857,14 @@ AkaMod = {
 			let skipPopup = false;
 			if(AkaMod.blizzDays.activePokemon === -1) {
 				if(forced && AkaMod.blizzDays.pokemon.length === AkaMod.pokemonTypes.length - 1) {
-					let maxed = 0;
+					let maxed = true;
 					for(let pokemon of AkaMod.blizzDays.pokemon) {
-						if(pokemon.level >= 99) {
-							maxed++;
+						if(pokemon.level < 99) {
+							maxed = false;
+							break;
 						}
 					}
-					if(maxed===AkaMod.blizzDays.pokemon.length){
+					if(maxed){
 						AkaMod.blizzDays.activePokemon = AkaMod.pokemonTypes.length - 1; //missingno
 					}
 				}
@@ -1883,7 +1885,7 @@ AkaMod = {
 							if(pokemon.index === 11) {
 								if(pokemon.form === 6) {
 									AkaMod.blizzDays.activePokemon = 16;
-									Game.Notify("The Chimera Appears!", "God and Lucifer have left you and merged to create the Chimera!", [24,7]);
+									Game.Notify("The Chimera Appears!", "God and Lucifer have left you and merged to create the Chimera!", [21,32]);
 									skipPopup = true;
 									Game.Upgrades["Lucifer Again"].lose();
 									AkaMod.blizzDays.pokemon.splice(p, 1);
@@ -1896,7 +1898,7 @@ AkaMod = {
 					if(AkaMod.blizzDays.baitTime >= 60 * 75 && AkaMod.blizzDays.currentBait === 3 && !Game.Has("Try to Catch Hungerer")){
 						AkaMod.blizzDays.activePokemon = 15;
 						AkaMod.blizzDays.currentBait = -1;
-						Game.Popup("The putrefying Pizza has attracted the Hungerer!");
+						Game.Notify("The Hungerer Appears!", "Drawn by your putrefying Pizza, the Hungerer has arrived!", [24,7]);
 						skipPopup = true;
 					}
 				}
@@ -1920,6 +1922,7 @@ AkaMod = {
 			if(Game.HasAchiev("A Completed CreatureDex")){
 				xp *= 2;
 			}
+			let hasPokemon = false;
 			if(Math.random() < chance/100) {
 				//success!
 				Game.Win("Creature Amateur");
@@ -1951,7 +1954,6 @@ AkaMod = {
 					AkaMod.updateQuestProgress(1);
 				}
 				//do we have this critter already?
-				let hasPokemon = false;
 				let hasMaxLevel=false;
 				for(let p = 0; p < AkaMod.blizzDays.pokemon.length; p++) {
 					if(AkaMod.blizzDays.pokemon[p].index === index) {
@@ -2017,6 +2019,9 @@ AkaMod = {
 				}
 			}
 			for(let p = 0; p < AkaMod.blizzDays.pokemon.length; p++) {
+				if(AkaMod.blizzDays.pokemon[p].index === AkaMod.blizzDays.activePokemon && !hasPokemon) {
+					continue; //don't get XP on just caught critters.
+				}
 				AkaMod.earnPokeXP(AkaMod.blizzDays.pokemon[p], xp);
 			}
 			let maxLevelCount = 0;
@@ -2074,10 +2079,10 @@ AkaMod = {
 		//this pokemon is earning xp and leveling up and evolving.
 		AkaMod.earnPokeXP=(pokemon, xp)=>{
 			if(pokemon.level >= 99) {
-				return; //nothing to do here.
+				return false; //nothing to do here.
 			}
-			if(pokemon.secret > 9) {
-				xp = Math.floor(xp / 2); //secret creatures level up slower.
+			if(pokemon.secret) {
+				xp = Math.ceil(xp / 4); //secret creatures level up slower.
 			}
 			const pokemonType = AkaMod.pokemonTypes[pokemon.index];
 			while(xp > 0) {
@@ -2107,6 +2112,7 @@ AkaMod = {
 					}
 				}
 			}
+			return true;
 		};
 		//figure out the current odds of catching this creature. Returns a value from 0-100.
 		AkaMod.chanceToCatch=(index)=>{
@@ -2957,10 +2963,10 @@ AkaMod = {
 		AkaMod.Achievement("Creature Connoisseur", "Caught 2000 total Creatures", [4, 6]);
 		AkaMod.Achievement("Creature Authority", "Caught 5000 total Creatures", [5, 6]);
 		AkaMod.Achievement("Discovered Chocolate Cake", "Bought the Chocolate Cake Bait", [25, 27]);
-		AkaMod.Achievement("Amatuer Baiter", "Bought 100 Baits", [27, 10]);
-		AkaMod.Achievement("Enthusiast Baiter", "Bought 1000 Baits", [16, 8]);
-		AkaMod.Achievement("Professional Baiter", "Bought 2000 Baits", [28, 30]);
-		AkaMod.Achievement("Master Baiter", "Bought 5000 Baits. You knew this achievement was coming.", [31, 9]);
+		AkaMod.Achievement("Amatuer Baiter", "I think we all know where this is going. Bought 100 Baits", [27, 10]);
+		AkaMod.Achievement("Enthusiast Baiter", "Oh, almost had you there. Not there yet though. Bought 1000 Baits", [16, 8]);
+		AkaMod.Achievement("Professional Baiter", "Oh gees, what you would be if you kept buying baits? Bought 2000 Baits", [28, 30]);
+		AkaMod.Achievement("Master Baiter", "Bought 5000 Baits. You knew this achievement was coming. I hope you are happy.", [31, 9]);
 		AkaMod.Achievement("First Creature to 99", "One of your creatures hit Max Level for the first time", [12, 5]);
 		AkaMod.Achievement("All Creatures to 99", "Max Leveled your 10 creatures", [13, 5]);
 		AkaMod.Achievement("Really All Creatures to 99", "Max Leveled all 13 creatures", [14, 5]);
