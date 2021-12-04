@@ -129,6 +129,7 @@ AkaMod = {
 		questDesc: "",
 		completedQuests: 0,
 		totalQuests: 0,
+		questCookies: 0,
 		equipment:[
 			-1,//helmet
 			-1,//shoulder
@@ -204,6 +205,7 @@ AkaMod = {
 			list.push("News: World of Warcraft experiences massive resurgence after adding more Cookies. <q>I don't know why it didn't occur to us sooner.</q> - Dev");
 			list.push("News: Beavers of the world organizing. Rumours abound of a Beaver Overlord.");
 			list.push("News: Popular streamer not allowed to leave his home until he posts more Don't Starve clips.");
+			list.push("News: Cookie Clicker mod wins award for most moddiest mod of the year.");
 			if(AkaMod.streamData.rank > 1){
 				let odds = 1;
 				if(AkaMod.streamData.rank < 100){
@@ -254,6 +256,9 @@ AkaMod = {
 				}
 				if(AkaMod.blizzDays.pokemon.length >= 10 && AkaMod.blizzDays.pokemon.length < AkaMod.pokemonTypes.length) {
 					list.push("There are still " + (AkaMod.pokemonTypes.length - AkaMod.blizzDays.pokemon.length) + " creatures you have not caught.");
+				}
+				if(AkaMod.blizzDays.caughtBunnies > 10) {
+					list.push("Eastern cottontail rabbits can have between one and seven litters each year, and they average three or four litters annually, Animal Diversity Web reports. Each litter can contain between one and 12 babies, with the average being five.");
 				}
 			}
 
@@ -355,6 +360,7 @@ AkaMod = {
 				questDesc: "",
 				completedQuests: 0,
 				totalQuests: AkaMod.blizzDays.totalQuests,
+				questCookies: 0,
 				equipment:[-1,-1,-1,-1,-1,-1,-1,],
 				finaleClicks: 0,
 				completions: AkaMod.blizzDays.completions
@@ -438,7 +444,7 @@ AkaMod = {
 					}
 					if(Game.Has("Stan?")) {
 						newSection += '<div class="crate upgrade '+(AkaMod.blizzDays.currentBoss===8?"":"enabled")+'" '
-						+Game.getDynamicTooltip('(bt1=function(){return \'<div style=\\\'width:360px;height:20px;text-align:center;padding:8px;\\\'>Stan, Satans little-known kid brother. Both are in the Soul-Tormenting business, but Stan decided to go the corporate route.</div>\';})','this')
+						+Game.getDynamicTooltip('(bt1=function(){return \'<div style=\\\'width:400px;height:20px;text-align:center;padding:8px;\\\'>Stan, Satans little-known kid brother. Both are in the Soul-Tormenting business, but Stan decided to go the corporate route.</div>\';})','this')
 							+'style="float:none;background-position:' + 1*-48 + 'px ' + 33*-48 + 'px;"></div>';
 					}
 					if(Game.Has("Asmodeus Again")) {
@@ -537,9 +543,9 @@ AkaMod = {
 							const pokemonType = AkaMod.pokemonTypes[pokemon.index];
 							let icon = pokemonType.icon;
 							let name = pokemonType.name;
-							let extraInfo = "";
+							let extraInfo = "<br />" + pokemonType.flavor.replaceAll("'", "\\\'");
 							if(pokemon.form > 0) {
-								extraInfo = "<br />This is " + name + "s " + pokemon.form + (pokemon.form === 1 ? "st" : pokemon.form === 2 ? "nd" : pokemon.form === 3 ? "rd" : "th") 
+								extraInfo += "<br />This is " + name + "s " + pokemon.form + (pokemon.form === 1 ? "st" : pokemon.form === 2 ? "nd" : pokemon.form === 3 ? "rd" : "th") 
 									+ (pokemon.level === 99 ? " and final": "") + " evolution.";
 								icon = pokemonType.forms[pokemon.form - 1].icon;
 								name = pokemonType.forms[pokemon.form - 1].name;
@@ -547,9 +553,13 @@ AkaMod = {
 							const toolTip = name + "<br />" + 
 								(pokemon.level === 99 ? "<span style=\\\'color: green\\\'>Max Level</span>" : "Level " + pokemon.level + " / 99" )
 								+ extraInfo;
-							const dynamicToolip = Game.getDynamicTooltip('(temp = function(){return\'<div style=\\\'width:140px;\\\'>' + toolTip + '</div>\'})','this');
+							const dynamicToolip = Game.getDynamicTooltip('(temp = function(){return\'<div style=\\\'width:200px;\\\'>' + toolTip + '</div>\'})','this');
+							let onClick = "";
+							if(pokemon.index === 0 && pokemon.level === 99 && Game.HasAchiev("BlizzBlues: Bunny Fan")) {
+								onClick = ' onClick="new Game.shimmer(\'bbBunny\',{icon: 2, offset: 0});new Game.shimmer(\'bbBunny\',{icon: 1, offset: 1});"';
+							}
 							newSection += '<div class="crate upgrade enabled" '
-								+ dynamicToolip
+								+ dynamicToolip + onClick
 								+' style="float:none;background-position:' + icon[0]*-48 + 'px ' + icon[1]*-48 + 'px;"></div>';
 						}
 						if(Game.Has("Easy Creature Click")) {
@@ -580,6 +590,10 @@ AkaMod = {
 						newSection += "<div class='listing'><b>Completed Quests: </b>" + AkaMod.blizzDays.completedQuests + " / 11</div>";
 					} else {
 						newSection += "<div class='listing'><b>Completed Quests: </b>" + AkaMod.blizzDays.completedQuests + "</div>";
+					}
+					if(AkaMod.blizzDays.questCookies > 0) {
+						newSection += "<div class='listing'><b>Cookies Gained From Quests: </b><div class=\"price plain\">"+Game.tinyCookie() + Beautify(AkaMod.blizzDays.questCookies) + "</div> ("
+						+(Math.round(10000 * AkaMod.blizzDays.questCookies / Game.cookiesEarned) / 100)+"% of Baked Cookies)</div>";
 					}
 					if(AkaMod.blizzDays.questTimer > 0) {
 						if(AkaMod.blizzDays.questTimer > 90) {
@@ -738,7 +752,7 @@ AkaMod = {
 			if(!pokemon.secret) {
 				mult *= 1+bdf*(pokemon.form+1);
 			} else {
-				mult *= 1+bdf*2*(pokemon.form+1);//double from secret pokemon.
+				mult *= 1+bdf*4*(pokemon.form+1);//4x from secret pokemon.
 			}
 		}
 		if(Game.HasAchiev("13 Days of Blizz Blues, 6th Run")){
@@ -1376,8 +1390,8 @@ AkaMod = {
 				bossAbility = bossAbilityCycle[AkaMod.blizzDays.round % bossAbilityCycle.length];
 			}
 			AkaMod.blizzDays.lastBossAbility = [bossAbility].concat(AkaMod.blizzDays.lastBossAbility);
-			if(AkaMod.blizzDays.lastBossAbility.length > 3){
-				AkaMod.blizzDays.lastBossAbility.splice(3);
+			if(AkaMod.blizzDays.lastBossAbility.length > bossAbilityCycle.length){
+				AkaMod.blizzDays.lastBossAbility.splice(bossAbilityCycle.length);
 			}
 			//now handle ability interactions.
 			switch(ability) {
@@ -1501,7 +1515,7 @@ AkaMod = {
 						if(AkaMod.blizzDays.bossHP > 100) {
 							AkaMod.blizzDays.bossHP = 100;
 						}
-						bossAbilityText += " Sundae is getting sleepy. She only did "+bossDamage+", but recovered " + healAmount + " health.";
+						bossAbilityText += " Sundae is getting sleepy. She only did "+bossDamage+" damage, but she also recovered " + healAmount + " health.";
 					} else {
 						bossAbilityText += " Sundae Scratched you. Her bad mood helped her to do " + bossDamage + " damage!";
 					}
@@ -1800,14 +1814,14 @@ AkaMod = {
 				{name: "Muddy Cat", icon:[18,28]}, {name: "Holy Cat", icon:[18,30]}, {name: "The Blackest Cat", icon:[18,31]}
 			]},
 			{name: "Single Cookie", flavor: "Extremely Rare. If Trubbish can be a pokemon, a Cookie can be a Creature.", baseChance:0, clickLimit: 100, clickBoost:1, icon:[0,5], forms:[
-				{name: "Two Cookies", icon:[1,5]}, {name: "Three Cookies", icon:[2,5]}, {name: "Four Cookies", icon:[3,5]}, {name: "Cookie Pile", icon:[4,5]}, {name: "Cookie Mound", icon:[6,5]},
-				{name: "Cookie Mass", icon:[7,5]}, {name: "Cookie Vortex", icon:[8,5]}, {name: "Cookie Pulsar", icon:[9,5]}, {name: "Cookie Quasar", icon:[10,5]},
-				{name: "Cookie World", icon:[11,5]}, , {name: "Infinite Cookie", icon:[12,5]}
+				{name: "Two Cookies", icon:[1,5]}, {name: "Three Cookies", icon:[2,5]}, {name: "Four Cookies", icon:[3,5]}, {name: "Cookie Pile", icon:[4,5]}, {name: "Cookie Mound", icon:[5,5]},
+				{name: "Cookie Mass", icon:[6,5]}, {name: "Cookie Vortex", icon:[7,5]}, {name: "Cookie Pulsar", icon:[8,5]}, {name: "Cookie Quasar", icon:[9,5]},
+				{name: "Cookie World", icon:[10,5]}, {name: "Infinite Cookie", icon:[11,5]}
 			]},
 			//bonus forms below
 			{name: "Voideater", secret:true, flavor: "The Eye sees all. It has seen the Void, and become the Void.", baseChance: -40, clickLimit: 10, clickBoost: 0.1, icon: [21,25]},
 			{name: "Hungerer", secret:true, flavor: "The Hungerer will swallow all. It's stomach is endless. It will never be sated.", baseChance: -40, clickLimit: 20, clickBoost: 0.1, icon: [21,32]},
-			{name: "Chimera", secret:true, flavor: "When the forcse of dark and light clash, the Chimera arises from the ashes.", baseChance: -50, clickLimit: 12, clickBoost: 0.1, icon: [24,7]},
+			{name: "Chimera", secret:true, flavor: "When the forces of dark and light clash, the Chimera arises from the ashes.", baseChance: -50, clickLimit: 12, clickBoost: 0.1, icon: [24,7]},
 			{name: "Missingno", secret:true, flavor: "ASDJKP@#_!^WERY:K", baseChance: -80, clickLimit: 40, clickBoost: 0.2, icon: [0,7], forms:[{name: "MissingNO", icon:[0,8]}, {name: "MissingNo", icon:[8,10]}, , {name: "MISSINGNO", icon:[17,5]}]},
 		]; //DON'T ADD MORE. It will break upgrades.
 		AkaMod.baitTypes=[
@@ -1864,12 +1878,15 @@ AkaMod = {
 					}
 					//check for chimera conditions.
 					if(Game.Has("Lucifer Again") && forced && !Game.Has("Try to Catch Chimera")) {
-						for(let pokemon of AkaMod.blizzDays.pokemon) {
-							if(pokemon.index === 9) {
+						for(let p = 0; p < AkaMod.blizzDays.pokemon.length; p++) {
+							const pokemon = AkaMod.blizzDays.pokemon[p];
+							if(pokemon.index === 11) {
 								if(pokemon.form === 6) {
 									AkaMod.blizzDays.activePokemon = 16;
-									Game.Popup("The close proximity of the God and Lucifer have caused the Chimera to appear!");
+									Game.Notify("The Chimera Appears!", "God and Lucifer have left you and merged to create the Chimera!", [24,7]);
 									skipPopup = true;
+									Game.Upgrades["Lucifer Again"].lose();
+									AkaMod.blizzDays.pokemon.splice(p, 1);
 								}
 								break;
 							}
@@ -1922,9 +1939,12 @@ AkaMod = {
 				}
 				if(index === 0){
 					AkaMod.blizzDays.caughtBunnies++;
-					if(AkaMod.blizzDays.caughtBunnies >= 100){
-						Game.Win("BlizzBlues: Bunny Farm");
-						if(AkaMod.blizzDays.caughtBunnies >= 1000){Game.Win("BlizzBlues: Bunny Plantation");}
+					if(AkaMod.blizzDays.caughtBunnies >= 10){
+						Game.Win("BlizzBlues: Bunny Fan");
+						if(AkaMod.blizzDays.caughtBunnies >= 100){
+							Game.Win("BlizzBlues: Bunny Farm");
+							if(AkaMod.blizzDays.caughtBunnies >= 1000){Game.Win("BlizzBlues: Bunny Plantation");}
+						}
 					}
 				}
 				if(AkaMod.blizzDays.questType === 3) {
@@ -2148,8 +2168,8 @@ AkaMod = {
 			const name = AkaMod.pokemonTypes[AkaMod.blizzDays.activePokemon].name;
 			AkaMod.updateProgressBar(AkaMod.chanceToCatch(AkaMod.blizzDays.activePokemon), 100, "pokemonBar", "Chance To Catch " + name);
 			const upgrd = Game.Upgrades["Try to Catch " + name];
-			upgrd.ddesc = upgrd.desc = "Try to catch " + name + "!<br />" + AkaMod.pokemonTypes[AkaMod.blizzDays.activePokemon].flavor + "<br /><br />"
-				+ "Increases CPS by 1%. You have a " + AkaMod.chanceToCatch(AkaMod.blizzDays.activePokemon) + "% chance to catch this creature. " 
+			upgrd.ddesc = upgrd.desc = "Try to catch " + name + "! Increases CPS by "+(AkaMod.pokemonTypes[AkaMod.blizzDays.activePokemon].secret?"4":"1")+"%<br />" + AkaMod.pokemonTypes[AkaMod.blizzDays.activePokemon].flavor + "<br /><br />"
+				+ "Increases CPS by 1%. You have a " + AkaMod.chanceToCatch(AkaMod.blizzDays.activePokemon) + "% chance to catch this creature." 
 				+ "Improve it by buying better bait, catching and leveling up more creatures, or clicking the big cookie.";
 		};
 		Game.storeBuyAll = () => {
@@ -2224,7 +2244,7 @@ AkaMod = {
 				{name: "Kirel Narak", icon: "https://wow.zamimg.com/images/wow/icons/large/inv_boots_leather_dungeonleather_c_06.jpg", html:'<table><tr><td><span class=\\\'q\\\'><br>Item Level 50</span><br>Binds when picked up<br>Unique-Equipped: Legion Legendary (1)<table width=\\\'100%\\\'><tr><td>Feet</td><th><span class=\\\'q1\\\'>Leather</span></th></tr></table><span>14 Armor</span><br><span>+11 [Agility or Intellect]</span><br><span>+16 Stamina</span><br><span class=\\\'q2\\\'>+8 Versatility</span><br><span class=\\\'q2\\\'>+14 Mastery</span><br>Durability 95 / 95<div class=\\\'wowhead-tooltip-item-classes\\\'>Classes: <a href=\\\'/class=12\\\' class=\\\'c12\\\'>Demon Hunter</a></div></td></tr></table><table><tr><td><span class=\\\'q2\\\'>Equip: <a href=\\\'/spell=210970\\\' class=\\\'q2\\\'>The instant initial damage from your Immolation Aura reduces the remaining cooldown on Fiery Brand by 2 sec for each enemy hit.</a></span><br>Requires Level 40<br><span class=\\\'q\\\'>&quot;Witness the flames that have consumed countless worlds. All will burn in the legion\\\'s fire!&quot;</span><div class=\\\'whtt-sellprice\\\'>Sell Price: <span class=\\\'moneygold\\\'>12</span> <span class=\\\'moneysilver\\\'>21</span> <span class=\\\'moneycopper\\\'>9</span></div></td></tr></table>'},
 			]
 		];
-		//render a piece of equipment on the stats page.
+		//render a piece of equipment on the stats page. Props to WowHead. HTML was copied from them and tweaked.
 		AkaMod.renderEquipment=(slot, flip)=>{
 			const equipment = AkaMod.blizzDays.equipment[slot];
 			if(equipment < 0){
@@ -2232,12 +2252,44 @@ AkaMod = {
 			}
 			const equipmentType = AkaMod.equipmentTypes[slot][equipment];
 			let classString = "";
-			if(flip || slot === 3){
-				classString = "class='";
-				if(flip && slot===3){classString += "flippedVertical";}
-				else if(flip){classString += "flipped";}
-				else if(slot===3){classString += "flippedBoth";}
-				classString += "'";
+			if(flip && slot !== 3){
+				//if(flip && slot===3){classString += "flippedVertical";}
+				classString = "class='flipped'";
+				if(slot === 6 && equipment === 5){
+					classString = "";
+				}
+			} else if(slot === 6 && equipment === 5){
+				classString = "class='flipped'";
+			} 
+			if(slot === 3){
+				//special rendering rule for gloves to get them oriented right.
+				if(flip){
+					switch(equipment){
+						case 2: 
+							classString = "class='flippedBoth'";
+							break;
+						case 1: case 3:
+							classString = "class='flippedVertical'";
+							break;
+						case 4: case 5:
+							break;
+						default:
+							classString = "class='flipped'";
+							break;
+					}
+				} else {
+					switch(equipment){
+						case 2:
+							classString = "class='flippedVertical'";
+							break;
+						case 1: case 3:
+							classString = "class='flippedBoth'";
+							break;
+						case 4: case 5:
+							classString = "class='flipped'";
+							break;
+					}
+				}
 			}
 			return "<span "+classString+" style='border: 2px solid "+AkaMod.getEquipmentColor(equipment)+";border-radius:3px;display: inline-block;width:56px;height:56px;background-image:url("+equipmentType.icon+")' " 
 				+ Game.getDynamicTooltip("(temp = function(){return \'<div style=\\\'width:"+(130 + 20 * equipment)+"px\\\'><span class=\\\'q"+equipment+"\\\'>"+equipmentType.name+"</span>"+equipmentType.html+"</div>\';})", 'this') +"/>";
@@ -2377,6 +2429,7 @@ AkaMod = {
 				}
 				Game.Earn(amount);
 				Game.Popup("Earned " + Beautify(amount, 0) + " cookies!");
+				AkaMod.blizzDays.questCookies += amount;
 			} else {
 				AkaMod.blizzDays.equipment[slot]++;
 				Game.Popup("Earned <span style='color:"+AkaMod.getEquipmentColor(AkaMod.blizzDays.equipment[slot])+"'>[" + AkaMod.equipmentTypes[slot][AkaMod.blizzDays.equipment[slot]].name + "]</span>!");
@@ -2387,7 +2440,7 @@ AkaMod = {
 					case 4: Game.Win("BlizzBlues: Your First Epic Gear Piece"); break;
 					case 5: Game.Win("BlizzBlues: Your First Legendary Gear Piece"); break;
 				}
-				let minEquipmentTier = -1;
+				let minEquipmentTier = 10;
 				for(let e=0; e < AkaMod.blizzDays.equipment.length;e++){
 					minEquipmentTier = Math.min(minEquipmentTier, AkaMod.blizzDays.equipment[e]);
 				}
@@ -2541,6 +2594,52 @@ AkaMod = {
 				me.sizeMult=1;
 			}
 		};
+		Game.shimmerTypes.bbBunny={
+			reset:()=>{},
+			spawnsOnTimer:false,
+			spawned:0,
+			missFunc:function(me){},
+			popFunc:function(me){
+				let toEarn = Game.cookiesPsRaw * (1 + AkaMod.blizzDays.caughtBunnies/1000);
+				Game.Earn(toEarn);
+				Game.Popup("Earned " + Beautify(toEarn) + " Cookies");
+				AkaMod.blizzDays.caughtBunnies++;
+				me.die();
+				if(Math.random() < 0.75){
+					let spawnNewBunnies = Math.ceil(Math.random() * 4);
+					for(;spawnNewBunnies > 0; spawnNewBunnies--){
+						new Game.shimmer("bbBunny",{icon: spawnNewBunnies%4, offset: spawnNewBunnies / 2});
+					}
+				}
+				if(AkaMod.blizzDays.caughtBunnies >= 100){
+					Game.Win("BlizzBlues: Bunny Farm");
+					if(AkaMod.blizzDays.caughtBunnies >= 1000){Game.Win("BlizzBlues: Bunny Plantation");}
+				}
+			},
+			updateFunc:function(me){ //copied from orteil's reindeer
+				const jumpHeight = 256;
+				me.l.style.transform='translate('+(me.x+(Game.bounds.right-Game.bounds.left)*(1-me.life/(Game.fps*me.dur)))+'px,'+(me.y-Math.abs(Math.sin(me.life*0.1))*jumpHeight)+'px) rotate('+(Math.sin(me.life*0.2+0.3)*10)+'deg) scale('+(me.sizeMult*(1+Math.sin(me.id*0.53)*0.1))+')';
+				me.life--;
+				if (me.life<=0) {
+					this.missFunc(me);me.die();
+				}
+			},
+			initFunc:function(me){
+				me.x=-96;
+				me.y=(Game.bounds.bottom-Game.bounds.top)/2 + 24 - (Math.random()*48);
+				me.l.style.height = me.l.style.width = '96px';
+				me.l.style.backgroundImage='url(img/bunnies.png)';
+				me.l.style.display='block';
+				me.l.style.opacity="1";
+				me.l.style.backgroundPosition=(-96*me.forceObj.icon) + "px 0px";
+				//me.l.style.backgroundSize="96px 96px";
+				me.l.style.cursor="pointer";
+				
+				me.dur=6;//duration; the cookie's lifespan in seconds before it despawns
+				me.life=Math.ceil(Game.fps*(me.dur+(me.forceObj.offset)));
+				me.sizeMult=1;
+			}
+		};
 		//handles determining if we spawn a particle.
 		AkaMod.finalDayTick=(time)=>{
 			if(time >= 180+36) {
@@ -2603,7 +2702,7 @@ AkaMod = {
 		new Game.buffType('scratch',function(time){
 			return {
 				name:'Scratch',
-				desc:'Sundae scratched you!',
+				desc:'Sundae scratched you! CPS reduced by 25%.',
 				icon:[18,17],
 				time:time*Game.fps,
 				add:true,
@@ -2614,7 +2713,7 @@ AkaMod = {
 		new Game.buffType('purr',function(time){
 			return {
 				name:'Purring',
-				desc:'Sundae enjoyed her treat! Clicks boosted.',
+				desc:'Sundae enjoyed her treat! Clicks multiplied by 4.',
 				icon:[18,13],
 				time:time*Game.fps,
 				add:true,
@@ -2636,7 +2735,7 @@ AkaMod = {
 		new Game.buffType('blahblah',function(time){
 			return {
 				name:'Oh my gosh please stop talking.',
-				desc:'Click bonus increased to help pass the time, but CPS decreased out of boredom. And yes, it is 90 minutes.',
+				desc:'Click bonus increased by 100% to help pass the time, but CPS decreased by 5% out of boredom. And yes, it is 90 minutes.',
 				icon:[28,7],
 				time:time*Game.fps,
 				add:true,
@@ -2769,7 +2868,7 @@ AkaMod = {
 		AkaMod.Upgrade("Complete A Quest","Turn in your Quest and get a reward!",11,[0,7], ()=>{AkaMod.completeQuest()});
 		//12
 		AkaMod.Month12Upgrade = "A 12 month contract locking you into a 7 year old game paying over $150 for beta access that everyone else gets for free, a midget mount, and a copy of Diablo 3.";
-		AkaMod.Upgrade(AkaMod.Month12Upgrade, "+12% CPS, but you can't Prestige for 1 year.",cnum(10000, "qi"),[15,9]);
+		AkaMod.Upgrade(AkaMod.Month12Upgrade, "+12% CPS, but you can't Prestige for 1 year unless you break your contract!",cnum(10000, "qi"),[15,9]);
 		//13
 		AkaMod.Upgrade("The 13th Day of Blizz Blues?", "+13% CPS. Turn up your audio!",cnum(10000, "qi"),[17,9], ()=>{AkaMod.startFinalDay()});
 		Game.RequiresConfirmation(Game.last, '<h3>Check your audio</h3><div class="block">Make sure you have your audio up. Are you ready to continue?</div>');
@@ -2835,7 +2934,7 @@ AkaMod = {
 		AkaMod.Achievement("Christmas Boss Fighter", "Defeat your first Boss", [7, 11]);
 		AkaMod.Achievement("Christmas Boss Conqueror", "Defeat all Bosses", [12, 11]);
 		AkaMod.Achievement("Defeated Lucifer", "Unlocked and beat the secret boss Lucifer", [13, 11]);
-		AkaMod.Achievement("Defeated Stan", "Unlocked and beat the secret boss... Stan?", [1, 34]);
+		AkaMod.Achievement("Defeated Stan", "Unlocked and beat the secret boss... Stan?", [1, 33]);
 		AkaMod.Achievement("Pacified Sundae", "Sundae is appeased... for now.", [18, 17]);
 		AkaMod.Achievement("Christmas Boss Professional", "Perfectly defeat a boss without any extranous actions.", [8, 13]);
 		AkaMod.Achievement("Christmas Boss Mastery", "Perfectly defeat all bosses without any extranous actions.", [8, 14]);
@@ -2866,7 +2965,7 @@ AkaMod = {
 		AkaMod.Achievement("All Creatures to 99", "Max Leveled your 10 creatures", [13, 5]);
 		AkaMod.Achievement("Really All Creatures to 99", "Max Leveled all 13 creatures", [14, 5]);
 		AkaMod.Achievement("On the Origin of Creatures", "Evolved a creature for the first time", [22, 12]);
-		AkaMod.Achievement("Making Darwin Proud", "Evolved all creatures to their highest level.", [1, 34]);
+		AkaMod.Achievement("Making Darwin Proud", "Evolved all creatures to their highest level.", [1, 33]);
 		AkaMod.Achievement("BlizzBlues: A Bit of XP", "Collect 10,000 XP", [4, 5]);
 		AkaMod.Achievement("BlizzBlues: A Stack of XP", "Collect 50,000 XP", [5, 5]);
 		AkaMod.Achievement("BlizzBlues: A Pile of XP", "Collect 100,000 XP", [6, 5]);
@@ -2917,6 +3016,10 @@ AkaMod = {
 		AkaMod.Achievement("Streamer Rank 100", "Ranked up to 100!", [27,2]);
 		AkaMod.Achievement("Streamer Rank 10", "Ranked up to 10!", [28,2]);
 		AkaMod.Achievement("Streamer Rank 1!", "Ranked up to 1!", [29,2]);
+
+		//misc
+		AkaMod.Achievement("BlizzBlues: Bunny Fan", "Captured 10 Bunnies", [0, 12]);
+		Game.Achievements["BlizzBlues: Bunny Fan"].order = Game.Achievements["BlizzBlues: Bunny Farm"].order - 0.001;
 
 		AkaMod.loadAchievements();
 	},
@@ -3029,6 +3132,9 @@ AkaMod = {
 				}
 				if(AkaMod.blizzDays.questType != -1) {
 					AkaMod.updateQuestProgress(0);
+				}
+				if(!AkaMod.blizzDays.questCookies){
+					AkaMod.blizzDays.questCookies = 0;
 				}
 			}
 			if(strarr.length > 5) {

@@ -8,7 +8,10 @@ Pulls the latest version of the mod whenever the app starts, so you always have 
 Unlock a journey down the 12 Days of Blizz Blues Christmas!</b>
 
 ## Release Notes
-<b>V3</b>
+<b>V3.1</b>
+* Bug fixes and polish.
+
+<b>V3 - Wrath of the Blizz Blues</b>
 * Lots of new content inspired by the 12 Days of Blizz Blues! Collect all the Reindeer Cookies to start your journey...
 * Lots of new gameplay and suprises to discover as you progress through the 12 days!
 * 50+ New Upgrades! Read the descriptions carefully before buying them. Some of them have some strange effects.
