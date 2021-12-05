@@ -1,4 +1,4 @@
-//A mod by @MachineX7 for @AkaMikeB.
+//A mod by @MachineX7 for @AkaMikeB. And for myself. Just adding stuff as I go.
 //SPOILERS! May be more fun to discover stuff as you go.
 
 //utility functions.
@@ -250,15 +250,34 @@ AkaMod = {
 				if(AkaMod.blizzDays.currentBoss > 0) {
 					list.push("Each boss has an attack pattern. Learn the attack pattern can you can devise a strategy to counter it.");
 					list.push("Pay attention to how your abilities and the boss's abilities interact.");
-					list.push("You can only do a critical attack after a normal attack. Bosses have no such limitation.");
 					list.push("Boss attacks don't actually hurt you, buy they greatly increase the cost of your abilities.");
-					list.push("You may only call upon a single Grandma to fight for you at a time. She does slightly more damage when you are unable to deal damage.");
+					list.push("Defeating a boss without taking damage, in as few rounds as possible, yields rewards.");
 				}
 				if(AkaMod.blizzDays.pokemon.length >= 10 && AkaMod.blizzDays.pokemon.length < AkaMod.pokemonTypes.length - 1) {
 					list.push("There are still at least " + (AkaMod.pokemonTypes.length - AkaMod.blizzDays.pokemon.length - 1) + " creatures you have not caught.");
 				}
 				if(AkaMod.blizzDays.caughtBunnies > 10) {
 					list.push("Eastern cottontail rabbits can have between one and seven litters each year, and they average three or four litters annually. Each litter can contain between one and 12 babies, with the average being five.");
+				}
+
+				//hints
+				if(AkaMod.blizzDays.completions > 0 && AkaMod.blizzDays.nextDay > 6){
+					if(!Game.Has("Angry Sundae")){
+						list.push("<div style='color:red'><q>The First Queen watches. Beware her anger.</q></div>");
+					} else if(AkaMod.blizzDays.completions > 1) {
+						list.push("<div style='color:red'><q>Legend says when the 6 have fallen, and the 12 remain, the Abomination shall rise again.</q></div>");
+					} else if(AkaMod.blizzDays.completions > 2 && Game.Has("Satan Again") && !Game.Has("Stan?")){
+						list.push("<div style='color:green'><q>It's well known that Satan trades in favours, but rumour has it that a relative of his is currently trading in Golden Contracts.</q></div>");
+					}
+				}
+				if(AkaMod.blizzDays.completions > 0 && AkaMod.blizzDays.nextDay > 10 && Game.Has("Easy Creature Click")) {
+					if(!Game.Has("Try to Catch Voideater")){
+						list.push("<div style='color:red'><q>The Floating Eye sees many dark things. Summon, Summon the Sacrifice.</q></div>");
+					} else if(AkaMod.blizzDays.completions > 1 && !Game.Has("Try to Catch Chimera") && Game.Has("Lucifer Again")) {
+						list.push("<div style='color:red'><q>The Seventh Unholy will meet the God of Light, and a monster will be born.</q></div>");
+					} else if(AkaMod.blizzDays.completions > 2 && !Game.Has("Try to Catch Hungerer")) {
+						list.push("<div style='color:green'><q>The Hunger. Spoiled milk, moldy bread, rotten vegetables, fouled meat. The Putrefying.</q></div>");
+					}
 				}
 			}
 
@@ -417,30 +436,25 @@ AkaMod = {
 						newSection += "<div class='listing'><b>Perfect Victories: </b>"+AkaMod.blizzDays.optimalVictories+"</div>";
 					}					
 					newSection += "<div class='listing'><b>Bosses Fought: </b>";
-					let secretBossClue = 0;
 					if(Game.Has("Belphegor Again")) {
 						newSection += '<div class="crate upgrade '+(AkaMod.blizzDays.currentBoss===1?"":"enabled")+'" '
 							+Game.getDynamicTooltip('(bt1=function(){return \'<div style=\\\'width:300px;height:20px;text-align:center;padding:8px;\\\'>Belphegor, A demon of shortcuts and laziness.</div>\';})','this')
 							+' style="float:none;background-position:' + 7*-48 + 'px ' + 11*-48 + 'px;"></div>';
-						secretBossClue++;
 					}
 					if(Game.Has("Mammon Again")) {
 						newSection += '<div class="crate upgrade '+(AkaMod.blizzDays.currentBoss===2?"":"enabled")+'"'
 							+Game.getDynamicTooltip('(bt1=function(){return \'<div style=\\\'width:300px;height:20px;text-align:center;padding:8px;\\\'>Mammon, The demonic emodiment of wealth.</div>\';})','this')
 							+'style="float:none;background-position:' + 8*-48 + 'px ' + 11*-48 + 'px;"></div>';
-						secretBossClue++;
 					}
 					if(Game.Has("Abaddon Again")) {
 						newSection += '<div class="crate upgrade '+(AkaMod.blizzDays.currentBoss===3?"":"enabled")+'" '
 							+Game.getDynamicTooltip('(bt1=function(){return \'<div style=\\\'width:300px;height:20px;text-align:center;padding:8px;\\\'>Abaddon, Master of overindulgence.</div>\';})','this')
 							+'style="float:none;background-position:' + 9*-48 + 'px ' + 11*-48 + 'px;"></div>';
-						secretBossClue++;
 					}
 					if(Game.Has("Satan Again")) {
 						newSection += '<div class="crate upgrade '+(AkaMod.blizzDays.currentBoss===4?"":"enabled")+'" '
 						+Game.getDynamicTooltip('(bt1=function(){return \'<div style=\\\'width:300px;height:20px;text-align:center;padding:8px;\\\'>Satan, The counterpoint to everything righteous</div>\';})','this')
 							+'style="float:none;background-position:' + 10*-48 + 'px ' + 11*-48 + 'px;"></div>';
-						secretBossClue++;
 					}
 					if(Game.Has("Stan?")) {
 						newSection += '<div class="crate upgrade '+(AkaMod.blizzDays.currentBoss===8?"":"enabled")+'" '
@@ -451,19 +465,16 @@ AkaMod = {
 						newSection += '<div class="crate upgrade '+(AkaMod.blizzDays.currentBoss===5?"":"enabled")+'" '
 							+Game.getDynamicTooltip('(bt1=function(){return \'<div style=\\\'width:300px;height:20px;text-align:center;padding:8px;\\\'>Asmodeus, This demon with three heads.</div>\';})','this')
 							+'style="float:none;background-position:' + 11*-48 + 'px ' + 11*-48 + 'px;"></div>';
-						secretBossClue++;
 					}
 					if(Game.Has("Beelzebub Again")) {
 						newSection += '<div class="crate upgrade '+(AkaMod.blizzDays.currentBoss===6?"":"enabled")+'" '
 						+Game.getDynamicTooltip('(bt1=function(){return \'<div style=\\\'width:300px;height:20px;text-align:center;padding:8px;\\\'>Beelzebub, The festering incarnation of blight and disease.</div>\';})','this')
 							+'style="float:none;background-position:' + 12*-48 + 'px ' + 11*-48 + 'px;"></div>';
-						secretBossClue++;
 					}
 					if(Game.Has("Lucifer Again")) {
 						newSection += '<div class="crate upgrade '+(AkaMod.blizzDays.currentBoss===7?"":"enabled")+'" '
 							+Game.getDynamicTooltip('(bt1=function(){return \'<div style=\\\'width:300px;height:20px;text-align:center;padding:8px;\\\'>Lucifer, Also known as Lightbringer.</div>\';})','this')
 							+'style="float:none;background-position:' + 13*-48 + 'px ' + 11*-48 + 'px;"></div>';
-						secretBossClue += 10;
 					}
 					if(Game.Has("Angry Sundae")) {
 						newSection += '<div class="crate upgrade '+(AkaMod.blizzDays.currentBoss===9?"":"enabled")+'" '
@@ -491,15 +502,6 @@ AkaMod = {
 							newSection += "<div class='listing'>" + AkaMod.blizzDays.bossCombatText 
 								+ (AkaMod.blizzDays.summonedGrandma ? "Your Grandma is fighting for you and has done a total of " + AkaMod.blizzDays.grandmaDamage + " damage." : "")
 								+ "</div>";
-						}
-					}
-					if(AkaMod.blizzDays.completions > 0 && AkaMod.blizzDays.currentBoss === 0){
-						if(!Game.Has("Angry Sundae")){
-							newSection += "<div class='listing' style='color:red'><q>The First Queen watches. Beware her anger.</q></div>";
-						} else if(AkaMod.blizzDays.completions > 1 && secretBossClue === 6 && AkaMod.blizzDays.nextDay >= 7) {
-							newSection += "<div class='listing' style='color:red'><q>Legend says when the 6 have fallen, and the 12 remain, the Abomination shall rise again.</q></div>";
-						} else if(AkaMod.blizzDays.completions > 2 && secretBossClue > 2 && AkaMod.blizzDays.nextDay >= 7 && Game.Has("Satan Again") && !Game.Has("Stan?")){
-							newSection += "<div class='listing' style='color:green'><q>It's well known that Satan trades in favours, but rumour has it that a relative of his is currently trading in Golden Contracts.</q></div>";
 						}
 					}
 				}
@@ -571,17 +573,7 @@ AkaMod = {
 								+ dynamicToolip
 								+' style="margin-left:8px;float:none;background-position:' + 22*-48 + 'px ' + 7*-48 + 'px;" onClick="AkaMod.spawnPokemon(true)"></div>';
 						}
-						newSection += "</div>"; //end pokemon buttons.
-						if(AkaMod.blizzDays.completions > 0 && AkaMod.blizzDays.activePokemon === -1 && AkaMod.blizzDays.pokemon.length >= 10 && AkaMod.blizzDays.pokemon.length < 13 && Game.Has("Easy Creature Click")) {
-							if(!Game.Has("Try to Catch Voideater")){
-								newSection += "<div class='listing' style='color:red'><q>The Floating Eye sees many dark things. Summon, Summon the Sacrifice.</q></div>";
-							} else if(AkaMod.blizzDays.completions > 1 && !Game.Has("Try to Catch Chimera") && Game.Has("Lucifer Again")) {
-								newSection += "<div class='listing' style='color:red'><q>The Seventh Unholy will meet the God of Light, and a monster will be born.</q></div>";
-							} else if(AkaMod.blizzDays.completions > 2 && !Game.Has("Try to Catch Hungerer")) {
-								newSection += "<div class='listing' style='color:green'><q>The Hunger. Spoiled milk, moldy bread, rotten vegetables, fouled meat. The Putrefying.</q></div>";
-							}
-						}
-						
+						newSection += "</div>"; //end pokemon buttons.						
 					}
 				}
 
@@ -1874,8 +1866,8 @@ AkaMod = {
 					AkaMod.blizzDays.activePokemon = Math.floor(Math.random() * 8); //only the non-evolving
 				} else if(AkaMod.blizzDays.activePokemon === -1) {
 					AkaMod.blizzDays.activePokemon = Math.floor(Math.random() * 12); //all normal, but no secret or weird spawn
-					//5% single cookie chance
-					if(!forced && Math.random() < 0.05){
+					//2% single cookie chance
+					if(!forced && Math.random() < 0.02){
 						AkaMod.blizzDays.activePokemon = 13;
 					}
 					//check for chimera conditions.
@@ -3150,6 +3142,20 @@ AkaMod = {
 					Game.Unlock("Easy Creature Click");
 					Game.Upgrades["Easy Creature Click"].basePrice = 100 + Game.cookiesPsRaw * 60 * Math.pow(2, 10 - AkaMod.blizzDays.pokemon.length);
 				}}, 100);
+				if(AkaMod.blizzDays.activePokemon >= 0) {
+					let visible = false;
+					for(let p = 0; p < AkaMod.pokemonTypes.length; p++) {
+						const pokemonType = AkaMod.pokemonTypes[p];
+						if(Game.Upgrades["Try to Catch " + pokemonType.name].unlocked && !Game.Upgrades["Try to Catch " + pokemonType.name].bought){
+							visible = true;
+						}
+					}
+					if(!visible){
+						//something went wrong. Kill the pokemon catching stuff.
+						AkaMod.blizzDays.activePokemon = -1;
+						AkaMod.hideProgressBar("pokemonBar");
+					}
+				}
 			}
 
 			//recalculate gains at the end.
