@@ -2,7 +2,7 @@
 	"Name": "AkaMikeB Mod",
 	"ID": "akamikeb",
 	"Author": "MachineX7",
-	"Description": "A mod themed around AkaMikeB, giving boosts while he's streaming.",
+	"Description": "A mod inspired by AkaMikeB, giving boosts while he streams, a new pet, chocolate chips, and a new Christmas event!",
 	"ModVersion": 3,
 	"GameVersion": 2.031,
 	"Date": "13/08/2021",
