@@ -711,7 +711,7 @@ AkaMod = {
 	//does stuff when the big cookie is clicked.
 	clickHandler: function(){
 		try{
-			if(AkaMod.blizzDays.nextDay >= 10 && Game.Has("Pandas And Pokemon") && AkaMod.blizzDays.pokemon.length >= AkaMod.pokemonTypes.length-1) {
+			if(AkaMod.blizzDays.nextDay >= 10 && Game.Has("Pandas And Pokemon") && AkaMod.blizzDays.pokemon.length < AkaMod.pokemonTypes.length-1) {
 				if(AkaMod.blizzDays.activePokemon != -1) {
 					//increase catching chance.
 					if(AkaMod.blizzDays.clickCatchChance < AkaMod.pokemonTypes[AkaMod.blizzDays.activePokemon].clickLimit) {
@@ -2474,7 +2474,7 @@ AkaMod = {
 					AkaMod.blizzDays.questDesc = "Pet Sundae " + AkaMod.blizzDays.questTarget + " times";
 					break;
 				case 7: //click chips
-					AkaMod.blizzDays.questTarget = Math.floor(1 + AkaMod.blizzDays.completedQuests/2.5);
+					AkaMod.blizzDays.questTarget = Math.floor(1 + AkaMod.blizzDays.completedQuests/3);
 					AkaMod.blizzDays.questDesc = "Click " + AkaMod.blizzDays.questTarget + " Chips";
 					break;
 			}
@@ -2997,7 +2997,7 @@ AkaMod = {
 		AkaMod.upgrades.push(upgrd);
 		upgrd.dname = upgrd.name;
 		upgrd.ddesc = upgrd.desc;
-		if(window.CCSE && CCSE.isLoaded && Game.customUpgrades){
+		if(window.CCSE && Game.customUpgrades){
 			Game.customUpgrades[upgrd.name] = upgrd;//added for CCSE compatability.
 		}
 	},
